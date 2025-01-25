@@ -110,13 +110,20 @@ links_cmd() {
 }
 
 status_cmd() {
-    for region in $REGIONS
-    do
-        h="$region-proxy.$PROXY_DOMAIN"
-        echo
-        echo "Status: $h"
-        ssh -o ConnectTimeout=5 root@$h 'uptime -p' 2>/dev/null || echo "Unable to connect"
-    done
+     ensure_proxy_domain
+
+     for region in $REGIONS
+     do
+         h="$region-proxy.$PROXY_DOMAIN"
+         echo
+         echo "Status: $h"
+         if output=$(ssh -o ConnectTimeout=5 root@$h 'uptime -p' 2>/dev/null); then
+             echo "$output"
+             echo "Proxy: http://$h:8888"
+         else
+             echo "Unable to connect"
+         fi
+     done
  }
 
 log_cmd() {
@@ -128,6 +135,27 @@ log_cmd() {
     # shellcheck disable=SC2029
     ssh "root@$h" "tail $tail_args /var/log/squid/access.log"
 }
+
+
+# Port handling
+PORTS_FILE=".ports"
+
+generate_ports() {
+    SSH_PORT=$(shuf -i 40000-45000 -n 1)
+    PROXY_PORT=$(shuf -i 45001-50000 -n 1)
+    echo "SSH_PORT=$SSH_PORT" > "$PORTS_FILE"
+    echo "PROXY_PORT=$PROXY_PORT" >> "$PORTS_FILE"
+}
+
+load_ports() {
+    if [[ ! -f "$PORTS_FILE" ]]; then
+        generate_ports
+    fi
+    # shellcheck disable=SC1090
+    source "$PORTS_FILE"
+}
+
+load_ports
 
 export ANSIBLE_LOCALHOST_WARNING=False
 export ANSIBLE_INTERPRETER_WARNINGS=False

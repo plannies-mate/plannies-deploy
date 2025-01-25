@@ -42,6 +42,34 @@
         timeout: 300
         search_regex: OpenSSH
 
+    - name: Configure SSH on custom port
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?Port '
+        line: "Port {{ ssh_port }}"
+        validate: '/usr/sbin/sshd -t -f %s'
+      notify: restart ssh
+
+    - name: Wait for custom SSH port
+      wait_for:
+        port: "{{ ssh_port }}"
+        state: started
+        timeout: 30
+
+#    - name: Disable default SSH port
+#      lineinfile:
+#        path: /etc/ssh/sshd_config
+#        regexp: '^Port 22'
+#        state: absent
+#        validate: '/usr/sbin/sshd -t -f %s'
+#      notify: restart ssh
+
+    # Add handlers:
+    - name: restart ssh
+      service:
+        name: ssh
+        state: restarted
+
     - name: Add host to inventory
       add_host:
         name: proxy
