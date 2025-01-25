@@ -90,7 +90,7 @@ inventory_cmd() {
     else
         printf "%-20s %-15s %-12s %-20s %s\n" "NAME" "IP" "REGION" "CREATED" "TAGS"
         echo "--------------------------------------------------------------------------------"
-        echo "$instances" | jq -r '.[] | "\(.label) \(.ipv4[0]) \(.region) \(.created) \(.tags[]?)"' | \
+        echo "$instances" | jq -r '.label + " " + (.ipv4[0]|tostring) + " " + .region + " " + .created + " " + (if .tags then (.tags|join(",")) else "-" end)' | \
         while read -r name ip region created tags; do
             printf "%-20s %-15s %-12s %-20s %s\n" \
                 "$name" "$ip" "$region" "$(date -d "$created" '+%Y-%m-%d %H:%M')" "$tags"

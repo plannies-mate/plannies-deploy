@@ -1,3 +1,5 @@
+# inventory/linodes
+---
 plugin: linode.cloud.inventory
 keyed_groups:
   - key: labels
