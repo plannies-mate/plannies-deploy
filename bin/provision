@@ -1,0 +1,90 @@
+#!/bin/bash
+
+set -e
+
+INVENTORY_FILE="inventory.yml"
+DEFAULT_TAIL_LINES=200
+
+usage() {
+    echo "Usage: $0 {create|destroy|status|log} [tail options for log]"
+    exit 1
+}
+
+check_dependencies() {
+    command -v ansible-playbook >/dev/null 2>&1 || { echo "ansible-playbook required"; exit 1; }
+}
+
+check_env() {
+    local required_vars=(
+        "LINODE_TOKEN"
+        "PROXY_PASSWORD"
+        "PROXY_DOMAIN"
+    )
+
+    local missing=()
+    for var in "${required_vars[@]}"; do
+        if [ -z "${!var}" ]; then
+            missing+=("$var")
+        fi
+    done
+
+    if [ ${#missing[@]} -ne 0 ]; then
+        echo "Error: Missing required environment variables:"
+        printf '%s\n' "${missing[@]}"
+        echo
+        echo "Please set them before running this command:"
+        echo "export LINODE_TOKEN='your_token'"
+        echo "export PROXY_PASSWORD='your_password'"
+        exit 1
+    fi
+}
+
+get_proxy_ip() {
+    grep -A1 "proxy:" "$INVENTORY_FILE" 2>/dev/null | grep "ansible_host" | cut -d: -f2 | tr -d ' "' || echo ""
+}
+
+status() {
+    local ip=$(get_proxy_ip)
+    if [ -z "$ip" ]; then
+        echo "Status: Not provisioned"
+        return
+    fi
+    
+    echo "Status: Running"
+    echo "IP: $ip"
+    ssh -o ConnectTimeout=5 root@$ip 'uptime -p' 2>/dev/null || echo "Unable to connect"
+}
+
+log() {
+    local ip=$(get_proxy_ip)
+    if [ -z "$ip" ]; then
+        echo "Proxy not provisioned"
+        return 1
+    fi
+
+    local tail_args="${@:--n $DEFAULT_TAIL_LINES}"
+    ssh root@$ip "tail $tail_args /var/log/squid/access.log"
+}
+
+check_dependencies
+check_env
+
+case "$1" in
+    create)
+        ansible-playbook create.yml
+        ;;
+    destroy)
+        ansible-playbook destroy.yml
+        ;;
+    status)
+        status
+        ;;
+    log)
+        shift
+        log "$@"
+        ;;
+    *)
+        usage
+        ;;
+esac
+

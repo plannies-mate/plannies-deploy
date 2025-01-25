@@ -1,0 +1,74 @@
+# create.yml
+---
+- name: Create Australian Proxy
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Create Linode instance
+      community.linode.linode:
+        api_token: "{{ lookup('env', 'LINODE_TOKEN') }}"
+        label: "au-proxy"
+        type: "{{ linode_type }}"
+        region: "{{ region }}"
+        image: "linode/ubuntu22.04"
+        root_pass: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+        state: present
+      register: linode
+
+    - name: Set proxy IP
+      set_fact:
+        proxy_ip: "{{ linode.instance.ipv4[0] }}"
+
+    - name: Update DNS record
+      community.linode.domain_record:
+        api_token: "{{ lookup('env', 'LINODE_TOKEN') }}"
+        domain: "{{ proxy_domain.split('.')[-2:] | join('.') }}"
+        type: A
+        name: "{{ proxy_domain.split('.')[0] }}"
+        target: "{{ proxy_ip }}"
+        state: present
+
+    - name: Wait for SSH
+      wait_for:
+        host: "{{ proxy_ip }}"
+        port: 22
+        delay: 10
+        timeout: 300
+
+    - name: Add host to inventory
+      add_host:
+        name: proxy
+        groups: proxy
+        ansible_host: "{{ proxy_ip }}"
+
+- name: Configure proxy server
+  hosts: proxy
+  become: true
+  tasks:
+    - name: Install Squid
+      apt:
+        name: squid
+        update_cache: yes
+
+    - name: Configure Squid
+      template:
+        src: templates/squid.conf.j2
+        dest: /etc/squid/squid.conf
+      notify: restart squid
+
+    - name: Create auth file
+      htpasswd:
+        path: /etc/squid/passwd
+        name: morph
+        password: "{{ proxy_password }}"
+        owner: proxy
+        group: proxy
+        mode: '0640'
+      notify: restart squid
+
+  handlers:
+    - name: restart squid
+      service:
+        name: squid
+        state: restarted
+

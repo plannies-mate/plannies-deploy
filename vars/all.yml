@@ -1,0 +1,9 @@
+# vars/main.yml
+---
+linode_type: "g6-nanode-1"
+region: "ap-southeast"
+proxy_password: "{{ lookup('env', 'PROXY_PASSWORD') | default('changeme', true) }}"
+proxy_domain: "au.proxy.example.com"
+dns_provider: "linode"
+dns_token: "{{ lookup('env', 'LINODE_TOKEN') }}"
+
