@@ -1,9 +1,10 @@
-# vars/main.yml
+# vars/all.yml
 ---
 linode_type: "g6-nanode-1"
+linode_image: "linode/ubuntu24.04"
 region: "ap-southeast"
 proxy_password: "{{ lookup('env', 'PROXY_PASSWORD') | default('changeme', true) }}"
-proxy_domain: "au.proxy.example.com"
+proxy_domain: "{{ lookup('env', 'PROXY_DOMAIN') }}"
 dns_provider: "linode"
 dns_token: "{{ lookup('env', 'LINODE_TOKEN') }}"
-
+ansible_python_interpreter: "{{ playbook_dir }}/.venv/bin/python"

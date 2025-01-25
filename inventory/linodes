@@ -1,0 +1,6 @@
+plugin: linode.cloud.inventory
+keyed_groups:
+  - key: labels
+    prefix: tag
+strict: false
+api_token: '{{ lookup("env", "LINODE_TOKEN") }}'

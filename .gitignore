@@ -6,6 +6,10 @@
 /.aider*
 /.idea
 
+# python env
+/venv
+/.venv
+
 # Temp and log
 
 !/tmp/.keep
