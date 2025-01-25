@@ -8,7 +8,7 @@
   tasks:
     - name: Create Linode instance
       linode.cloud.instance:
-        api_token: "{{ lookup('env', 'LINODE_TOKEN') }}"
+        api_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
         label: "au-proxy"
         tags: ["proxies"]
         type: "{{ linode_type }}"
@@ -26,7 +26,7 @@
 
     - name: Update DNS record
       linode.cloud.domain_record:
-        api_token: "{{ lookup('env', 'LINODE_TOKEN') }}"
+        api_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
         domain: "{{ proxy_domain.split('.')[-2:] | join('.') }}"
         type: "A"
         name: "{{ proxy_domain.split('.')[0] }}"

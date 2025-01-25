@@ -27,6 +27,9 @@ REGION_MAP["usa"]="us-west"
 REGION_MAP["eu"]="eu-west"
 REGIONS="au usa eu"
 
+VENV_DIR=".venv"
+DEFAULT_TAIL_LINES=200
+
 help_cmd() {
     echo "Usage: $(basename $0) <command> [options]"
     echo "Commands:"
@@ -36,8 +39,8 @@ help_cmd() {
 }
 
 ensure_linode_token() {
-    if [ -z "$LINODE_TOKEN" ]; then
-        echo "Error: LINODE_TOKEN environment variable not set"
+    if [ -z "$LINODE_API_TOKEN" ]; then
+        echo "Error: LINODE_API_TOKEN environment variable not set"
         exit 1
     fi
 }
@@ -47,6 +50,52 @@ ensure_proxy_domain() {
         echo "Error: PROXY_DOMAIN environment variable not set"
         exit 1
     fi
+}
+
+setup_venv() {
+    # First deactivate any active Python environment
+    if [ -n "$CONDA_EXE" ]; then
+        $CONDA_EXE deactivate || echo Ignoring conda error
+    fi
+    hash -r
+    if type deactivate >/dev/null 2>&1; then
+        deactivate
+    fi
+    PATH=$(echo "$PATH" | tr ':' '\n' | grep -v "conda" | tr '\n' ':')
+    export PATH
+    echo "PATH=$PATH"
+    if [ ! -d "$VENV_DIR" ]; then
+        echo "Creating Python virtual environment..."
+        python3 -m venv "$VENV_DIR"
+    fi
+    # shellcheck disable=SC2010
+    if ls -l .venv/bin/python* | grep conda ; then
+        echo "ERROR: venv still tangled with conda! Aborting"
+        exit 2
+    fi
+    source "$VENV_DIR/bin/activate"
+}
+
+
+check_dependencies() {
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo "Installing python3..."
+        sudo apt install -y python3 python3-venv python3-pip
+    fi
+
+    setup_venv
+
+    if [ -f requirements.txt ]; then
+        pip install -r requirements.txt | grep -v 'Requirement already satisfied:' || true
+     fi
+
+    # ansible-galaxy collection remove community.general 2>/dev/null || true
+    for collection in linode.cloud ansible.posix; do
+        if ! ansible-galaxy collection list | grep "$collection"; then
+            echo "Installing $collection collection..."
+            ansible-galaxy collection install "$collection"
+        fi
+    done
 }
 
 verify_region()
@@ -82,7 +131,7 @@ inventory_cmd() {
     ensure_linode_token
 
     echo "=== Linode Instances ==="
-    instances=$(curl -s -H "Authorization: Bearer $LINODE_TOKEN" \
+    instances=$(curl -s -H "Authorization: Bearer $LINODE_API_TOKEN" \
         "https://api.linode.com/v4/linode/instances" | jq -r '.data[]')
 
     if [ -z "$instances" ]; then
@@ -110,22 +159,29 @@ links_cmd() {
 }
 
 status_cmd() {
-     ensure_proxy_domain
+    ensure_linode_token
+    ensure_proxy_domain
 
-     for region in $REGIONS
-     do
-         h="$region-proxy.$PROXY_DOMAIN"
-         echo
-         echo "Status: $h"
-         if output=$(ssh -p "$SSH_PORT" -o ConnectTimeout=5 "root@$h" 'uptime -p' 2>/dev/null); then
-             echo "$output"
-             echo "Proxy: http://$h:$PROXY_PORT/"
-             echo "Ssh: ssh -p $SSH_PORT root@$h # OR $h (for user $USER)"
-         else
-             echo "Unable to connect"
-         fi
-     done
- }
+    for region in $REGIONS; do
+        h="$region-proxy.$PROXY_DOMAIN"
+        echo -e "\n=== $h ==="
+
+        if host "$h" >/dev/null 2>&1; then
+            ip=$(host "$h" | awk '{print $NF}')
+            if ssh -p "$SSH_PORT" -o ConnectTimeout=5 "root@$h" 'uptime -p' >/dev/null 2>&1; then
+                echo "Status: Running"
+                echo "IP: $ip"
+                echo "Proxy: http://$h:$PROXY_PORT/"
+                echo "SSH: ssh -p $SSH_PORT root@$h"
+                echo "HTTP_PROXY=http://morph:$PROXY_PASSWORD@$h:$PROXY_PORT/"
+            else
+                echo "Status: Unreachable (DNS record exists but host down)"
+            fi
+        else
+            echo "Status: Not found (no DNS record)"
+        fi
+    done
+}
 
 log_cmd() {
     region="$1"
@@ -177,6 +233,9 @@ case "$command" in
         done
 
         if ((valid_command)); then
+            if [ "$command" != clobber ]; then
+                check_dependencies
+            fi
             "${command}_cmd" "$@"
         else
             echo "Unknown command: $command"
