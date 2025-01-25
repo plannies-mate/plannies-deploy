@@ -120,7 +120,8 @@ status_cmd() {
  }
 
 log_cmd() {
-    verify_region "$1" log
+    region="$1"
+    verify_region "$region" log
     h="$region-proxy.$PROXY_DOMAIN"
 
     local tail_args="${*:--n $DEFAULT_TAIL_LINES}"
