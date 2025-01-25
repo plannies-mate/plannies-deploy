@@ -5,7 +5,7 @@ acl authenticated proxy_auth REQUIRED
 http_access allow authenticated
 http_access deny all
 
-http_port 8888
+http_port {{ proxy_port }}
 
 forwarded_for off
 request_header_access Allow allow all

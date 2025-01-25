@@ -117,9 +117,10 @@ status_cmd() {
          h="$region-proxy.$PROXY_DOMAIN"
          echo
          echo "Status: $h"
-         if output=$(ssh -o ConnectTimeout=5 root@$h 'uptime -p' 2>/dev/null); then
+         if output=$(ssh -p "$SSH_PORT" -o ConnectTimeout=5 "root@$h" 'uptime -p' 2>/dev/null); then
              echo "$output"
-             echo "Proxy: http://$h:8888"
+             echo "Proxy: http://$h:$PROXY_PORT/"
+             echo "Ssh: ssh -p $SSH_PORT root@$h # OR $h (for user $USER)"
          else
              echo "Unable to connect"
          fi
