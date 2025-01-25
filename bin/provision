@@ -6,12 +6,18 @@ INVENTORY_FILE="inventory.yml"
 DEFAULT_TAIL_LINES=200
 
 usage() {
-    echo "Usage: $0 {create|destroy|status|log} [tail options for log]"
+    echo "Usage: $0 {create|destroy|status|log|links} [tail options for log]"
     exit 1
 }
 
 check_dependencies() {
     command -v ansible-playbook >/dev/null 2>&1 || { echo "ansible-playbook required"; exit 1; }
+    
+    # Check and install community.linode collection if missing
+    if ! ansible-galaxy collection list | grep -q "community.general"; then
+        echo "Installing community.general collection..."
+        ansible-galaxy collection install community.general
+    fi
 }
 
 check_env() {
@@ -83,6 +89,20 @@ case "$1" in
         shift
         log "$@"
         ;;
+    links)
+    cat <<-!EOF!
+        Lookup the following urls for linode identifiers (launching in firefox):
+
+        https://api.linode.com/v4/regions
+
+        https://api.linode.com/v4/images
+
+        https://api.linode.com/v4/linode/types
+
+        https://cloud.linode.com/profile/keys
+!EOF!
+        ;;
+
     *)
         usage
         ;;

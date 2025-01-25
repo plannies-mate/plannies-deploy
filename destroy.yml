@@ -3,6 +3,8 @@
 - name: Destroy Australian Proxy
   hosts: localhost
   gather_facts: false
+  vars_files:
+    - vars/all.yml
   tasks:
     - name: Get Linode instance
       community.linode.linode_info:
@@ -12,17 +14,17 @@
       register: linode_info
 
     - name: Delete Linode instance
-      community.linode.linode:
+      community.general.linode:
         api_token: "{{ lookup('env', 'LINODE_TOKEN') }}"
         label: "au-proxy"
         state: absent
       when: linode_info.instances | length > 0
 
     - name: Remove DNS record
-      community.linode.domain_record:
-        api_token: "{{ lookup('env', 'LINODE_TOKEN') }}"
-        domain: "{{ proxy_domain.split('.')[-2:] | join('.') }}"
-        type: A
-        name: "{{ proxy_domain.split('.')[0] }}"
-        state: absent
-
+      uri:
+        url: "https://api.linode.com/v4/domains/{{ proxy_domain.split('.')[-2:] | join('.') }}/records"
+        method: DELETE
+        headers:
+          Authorization: "Bearer {{ lookup('env', 'LINODE_TOKEN') }}"
+        status_code: [200, 204]
+      when: linode_info.instances | length > 0

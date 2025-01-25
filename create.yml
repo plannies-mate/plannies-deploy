@@ -1,17 +1,20 @@
 # create.yml
 ---
+# create.yml
 - name: Create Australian Proxy
   hosts: localhost
   gather_facts: false
+  vars_files:
+    - vars/all.yml
   tasks:
     - name: Create Linode instance
-      community.linode.linode:
-        api_token: "{{ lookup('env', 'LINODE_TOKEN') }}"
-        label: "au-proxy"
-        type: "{{ linode_type }}"
-        region: "{{ region }}"
-        image: "linode/ubuntu22.04"
-        root_pass: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+      community.general.linode:
+        api_key: "{{ lookup('env', 'LINODE_TOKEN') }}"
+        name: "au-proxy"
+        distribution: "linode/ubuntu22.04"  # Changed from image
+        datacenter: "{{ region }}"          # Changed from region
+        plan: "{{ linode_type }}"           # Changed from type
+        ssh_pub_key: "{{ lookup('file', '~/.ssh/id_ed25519.pub', errors='ignore') or lookup('file', '~/.ssh/id_rsa.pub') }}"  # Changed from authorized_keys
         state: present
       register: linode
 
@@ -20,13 +23,18 @@
         proxy_ip: "{{ linode.instance.ipv4[0] }}"
 
     - name: Update DNS record
-      community.linode.domain_record:
-        api_token: "{{ lookup('env', 'LINODE_TOKEN') }}"
-        domain: "{{ proxy_domain.split('.')[-2:] | join('.') }}"
-        type: A
-        name: "{{ proxy_domain.split('.')[0] }}"
-        target: "{{ proxy_ip }}"
-        state: present
+      uri:
+        url: "https://api.linode.com/v4/domains/{{ proxy_domain.split('.')[-2:] | join('.') }}/records"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ lookup('env', 'LINODE_TOKEN') }}"
+        body_format: json
+        body:
+          type: "A"
+          name: "{{ proxy_domain.split('.')[0] }}"
+          target: "{{ proxy_ip }}"
+          ttl: 300
+        status_code: [200, 201]
 
     - name: Wait for SSH
       wait_for:
