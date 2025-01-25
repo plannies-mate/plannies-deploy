@@ -54,7 +54,7 @@
   hosts: proxy
   become: true
   vars_files:
-    - vars/all.yml
+    - ../vars/all.yml
   tasks:
     - name: Create local user
       user:
@@ -76,7 +76,7 @@
 
     - name: Configure Squid
       template:
-        src: templates/squid.conf.j2
+        src: ../templates/squid.conf.j2
         dest: /etc/squid/squid.conf
       notify: restart squid
 

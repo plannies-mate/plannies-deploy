@@ -129,6 +129,9 @@ log_cmd() {
     ssh "root@$h" "tail $tail_args /var/log/squid/access.log"
 }
 
+export ANSIBLE_LOCALHOST_WARNING=False
+export ANSIBLE_INTERPRETER_WARNINGS=False
+
 command="$1"
 case "$command" in
     ""|"-h"|"--help")
