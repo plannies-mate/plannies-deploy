@@ -4,8 +4,7 @@
   hosts: localhost
   gather_facts: false
   vars_files:
-    - vars/all.yml
-    - vars/linode.yml
+    - ../vars/all.yml
   tasks:
     - name: Create Linode instance
       linode.cloud.instance:
