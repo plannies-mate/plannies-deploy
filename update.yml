@@ -18,12 +18,6 @@
   #vars:
   #  ansible_port: "{{ ssh_port }}"
   tasks:
-    - name: Wait for new SSH port
-      wait_for:
-        port: "{{ ssh_port }}"
-        timeout: 180
-        state: started
-
     - name: Install Squid
       apt:
         name: squid
@@ -33,20 +27,25 @@
       template:
         src: templates/squid.conf.j2
         dest: /etc/squid/squid.conf
-      notify: restart squid
+
+    - name: Install apache2-utils for htpasswd
+      apt:
+        name: apache2-utils
+        state: present
 
     - name: Create auth file
-      htpasswd:
-        path: /etc/squid/passwd
-        name: morph
-        password: "{{ proxy_password }}"
-        owner: proxy
-        group: proxy
-        mode: '0640'
-      notify: restart squid
+      shell: |
+        htpasswd -bc /etc/squid/passwd morph '{{ proxy_password }}'
+        chown proxy:proxy /etc/squid/passwd
+        chmod 640 /etc/squid/passwd
 
-  handlers:
     - name: restart squid
       service:
         name: squid
         state: restarted
+
+    - name: Wait for new proxy port
+      wait_for:
+        port: "{{ proxy_port }}"
+        timeout: 180
+        state: started
