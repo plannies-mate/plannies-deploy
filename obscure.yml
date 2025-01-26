@@ -13,10 +13,17 @@
         timeout: 180
         state: started
         host: "{{ ansible_host }}"
+      register: ssh_wait
+      retries: 3
+      delay: 10
 
 - name: Change SSH Server Port
   hosts: tag_needs_ssh_config
   gather_facts: false
+  # It can only be root nd port 22, so be obvious ...
+  vars:
+    ansible_ssh_user: root
+    ansible_ssh_port: 22
   tasks:
     - name: Configure SSH port
       lineinfile:
@@ -32,4 +39,3 @@
         label: "{{ instance_name }}"
         tags: ["proxies"]
         state: present
-

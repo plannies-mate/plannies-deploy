@@ -114,20 +114,28 @@ verify_region()
 create_cmd() {
     region="$1"
     shift
-    run_playbook "$region" create "$@" && obscure_cmd "$region" "$@"
+    run_playbook "$region" create "$@" &&
+      echo "Sleeping 30s ..." &&
+      sleep 30 &&
+      obscure_cmd "$region" "$@"
 }
 
 obscure_cmd() {
     region="$1"
     shift
     export BOOT=1
-    run_playbook "$region" obscure "$@" && update_cmd "$region" "$@"
+    run_playbook "$region" obscure "$@" &&
+     update_cmd "$region" "$@"
 }
 
 update_cmd() {
     region="$1"
     shift
-    run_playbook "$region" update "$@" && echo "Sleeping 90 seconds ..." && sleep 90 && status_cmd "$region" && bin/test_proxy "$region"
+    run_playbook "$region" update "$@" &&
+     echo "Sleeping 90 seconds ..." &&
+     sleep 90 &&
+     status_cmd "$region" &&
+     bin/test_proxy "$region"
 }
 
 run_playbook() {
