@@ -1,0 +1,26 @@
+#!/bin/bash
+
+source lib/common.sh
+
+ensure_linode_token
+check_dependencies
+load_ports
+
+echo "=== Linode Instances ==="
+instances=$(curl -s -H "Authorization: Bearer $LINODE_API_TOKEN" \
+    "https://api.linode.com/v4/linode/instances" | jq -r '.data[]')
+
+if [ -z "$instances" ]; then
+    echo "No proxy instances found"
+else
+    printf "%-20s %-15s %-12s %-20s %s\n" "NAME" "IP" "REGION" "CREATED" "TAGS"
+    echo "--------------------------------------------------------------------------------"
+    echo "$instances" | jq -r '.label + " " + (.ipv4[0]|tostring) + " " + .region + " " + .created + " " + (if .tags then (.tags|join(",")) else "-" end)' | \
+    while read -r name ip region created tags; do
+        printf "%-20s %-15s %-12s %-20s %s\n" \
+            "$name" "$ip" "$region" "$(date -d "$created" '+%Y-%m-%d %H:%M')" "$tags"
+    done
+fi
+
+echo -e "\n=== Ansible Inventory ==="
+ansible-inventory --list | jq '.'

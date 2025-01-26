@@ -1,0 +1,24 @@
+- name: System Packages
+  hosts: tag_proxies
+  gather_facts: false
+  become: true
+  become_user: root
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install squid and security packages
+      apt:
+        name:
+          - fail2ban
+          - ufw
+          - auditd
+          - squid
+        state: present
+
+    - name: Set conntrack limits
+      sysctl:
+        name: net.netfilter.nf_conntrack_max
+        value: '65536'
+        state: present

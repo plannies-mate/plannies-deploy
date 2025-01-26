@@ -1,33 +1,31 @@
 #!/bin/bash
-region="$1"
-shift
 
-REGIONS="au usa eu"
+source lib/common.sh
 
-verify_region()
-{
-      export REGION="$1"
-      if [ -z "$1" ] || [[ ! "$REGIONS" =~ $REGION ]]; then
-          echo "Error: Specify region: au|usa|eu"
-          echo "Usage: $(basename "$0") <region>"
-          exit 1
-      fi
-}
+one_region="$1"
+ensure_linode_token
+ensure_proxy_domain
+load_ports
 
-verify_region "$region" "status"
+for region in $REGIONS; do
+    if [ -n "$one_region" ] && [ "$region" != "$one_region" ] ; then
+        continue
+    fi
+    h="$region-proxy.$PROXY_DOMAIN"
+    echo -e "\n=== $h ==="
 
-h="$region-proxy.$PROXY_DOMAIN"
-
-echo "=== System Status ==="
-bin/ssh-proxy "$region" $* 'uptime -p'
-echo
-bin/ssh-proxy "$region" $* 'free -mw'
-
-echo -e "\n=== Security Status ==="
-bin/ssh-proxy "$region" $* 'fail2ban-client status'
-echo
-bin/ssh-proxy "$region" $* 'ufw status verbose'
-
-echo -e "\n=== Squid Status ==="
-bin/ssh-proxy "$region" $* 'squidclient mgr:5min'
-
+    if host "$h" >/dev/null 2>&1; then
+        ip=$(host "$h" | awk '{print $NF}')
+        if ssh -p "$SSH_PORT" -o ConnectTimeout=5 "handyman@$h" 'uptime -p' ; then
+            echo "Status: Running"
+            echo "IP: $ip"
+            echo "Proxy: http://$h:$PROXY_PORT/"
+            echo "SSH: ssh -p $SSH_PORT root@$h"
+            echo "HTTP_PROXY=http://morph:$PROXY_PASSWORD@$h:$PROXY_PORT/"
+        else
+            echo "Status: Unreachable (DNS record exists but host down)"
+        fi
+    else
+        echo "Status: Not found (no DNS record)"
+    fi
+done

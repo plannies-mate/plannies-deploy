@@ -1,196 +1,25 @@
 ---
 
-- name: Configure Proxy Server
+- import_playbook: update_packages.yml
+- import_playbook: update_users.yml
+- import_playbook: update_squid.yml
+- import_playbook: update_ssh.yml
+- import_playbook: update_firewall.yml
+- import_playbook: update_unattended_updates.yml
+
+- name: Configure Proxy Server - Reboot
   hosts: tag_proxies
   gather_facts: false
+  become: true
+  become_user: root
   tasks:
-    - name: Update apt cache
-      apt:
-        update_cache: yes
-
-    - name: Install squid and security packages
-      apt:
-        name:
-          - fail2ban
-          - ufw
-          - auditd
-          - squid
-        state: present
-
-    - name: Configure Squid
-      template:
-        src: templates/squid.conf.j2
-        dest: /etc/squid/squid.conf
-
-    - name: Install apache2-utils for htpasswd
-      apt:
-        name: apache2-utils
-        state: present
-
-    - name: Create auth file
-      shell: |
-        htpasswd -bc /etc/squid/passwd morph '{{ proxy_password }}'
-        chown proxy:proxy /etc/squid/passwd
-        chmod 640 /etc/squid/passwd
-
-    - name: Configure SSH security
-      lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: "{{ item.regexp }}"
-        line: "{{ item.line }}"
-        validate: '/usr/sbin/sshd -t -f %s'
-      loop:
-        - {regexp: '^#?PermitRootLogin', line: 'PermitRootLogin no'}
-        - {regexp: '^#?PasswordAuthentication', line: 'PasswordAuthentication no'}
-        - {regexp: '^#?MaxAuthTries', line: 'MaxAuthTries 3'}
-        - {regexp: '^#?LoginGraceTime', line: 'LoginGraceTime 30'}
-
-    - name: Add sudo group to allowed SSH users
-      lineinfile:
-        path: /etc/ssh/sshd_config
-        line: "AllowGroups sudo"
-        insertbefore: "^PermitRootLogin"
-
-    - name: Configure fail2ban for squid
-      copy:
-        dest: /etc/fail2ban/jail.d/squid.conf
-        content: |
-          [squid]
-          enabled = true
-          filter = squid
-          logpath = /var/log/squid/access.log
-          maxretry = 3
-          findtime = 600
-          bantime = 3600
-
-    - name: Configure fail2ban for SSH
-      copy:
-        dest: /etc/fail2ban/jail.d/sshd.conf
-        content: |
-          [sshd]
-          enabled = true
-          port = {{ ssh_port }}
-          filter = sshd
-          logpath = /var/log/auth.log
-          maxretry = 3
-          findtime = 300
-          bantime = 3600
-
-    - name: Configure squid logrotate
-      copy:
-        dest: /etc/logrotate.d/squid
-        content: |
-          /var/log/squid/*.log {
-          daily
-          rotate 7
-          compress
-          delaycompress
-          missingok
-          nocreate
-          sharedscripts
-          postrotate
-          /usr/bin/systemctl reload squid
-          endscript
-          }
-
-    - name: Configure sshd logrotate
-      copy:
-        dest: /etc/logrotate.d/sshd
-        content: |
-          /var/log/auth.log {
-          weekly
-          rotate 4
-          compress
-          missingok
-          notifempty
-          }
-
-    - name: Configure UFW
-      ufw:
-        rule: allow
-        port: "{{ item }}"
-        proto: tcp
-      loop:
-        - "{{ ssh_port }}"
-        - "{{ proxy_port }}"
-
-    - name: Enable UFW
-      ufw:
-        state: enabled
-        policy: deny
-
-    # Add to update.yml tasks:
-    - name: Create handyman user
-      user:
-        name: "{{ provision_user }}"
-        shell: /bin/bash
-        groups: sudo
-        append: yes
-
-    - name: Set up SSH for handyman
-      authorized_key:
-        user: "{{ provision_user }}"
-        state: present
-        key: "{{ lookup('file', '~/.ssh/id_ed25519.pub', errors='ignore') or lookup('file', '~/.ssh/id_rsa.pub') }}"
-
-    - name: Allow handyman sudo without password
-      lineinfile:
-        path: /etc/sudoers.d/handyman
-        line: "handyman ALL=(ALL) NOPASSWD:ALL"
-        create: yes
-        mode: '0440'
-        validate: 'visudo -cf %s'
-
-    - name: Create swap file
-      command: dd if=/dev/zero of=/swapfile bs=1M count=1024
-
-    - name: Set swap file permissions
-      file:
-        path: /swapfile
-        mode: '0600'
-
-    - name: Make swap
-      command: mkswap /swapfile
-
-    - name: Enable swap
-      command: swapon /swapfile
-
-    - name: Add swap to fstab
-      lineinfile:
-        path: /etc/fstab
-        line: '/swapfile none swap sw 0 0'
-
-    - name: Set swappiness
-      sysctl:
-        name: vm.swappiness
-        value: '10'
-        state: present
-
-    - name: Install unattended-upgrades
-      apt:
-        name: unattended-upgrades
-        state: present
-        update_cache: yes
-
-    - name: Run unattended-upgrades
-      command: "unattended-upgrade || echo Ignored failure"
-
-    - name: Configure unattended-upgrades
-      command: dpkg-reconfigure -f noninteractive unattended-upgrades
-
-    - name: Enable unattended-upgrades
-      copy:
-        content: |
-          APT::Periodic::Update-Package-Lists "1";
-          APT::Periodic::Unattended-Upgrade "1";
-        dest: /etc/apt/apt.conf.d/20auto-upgrades
 
     - name: 'Initiate Reboot without waiting - forces updated ssh to be used'
       shell: 'sleep 1 && reboot -f && sleep 1'
       async: 1
       poll: 0
 
-- name: Wait for SSH port
+- name: Configure Proxy Server - Wait for reboot
   hosts: tag_proxies
   gather_facts: false
   tasks:
@@ -202,4 +31,3 @@
         timeout: 180
         state: started
         host: "{{ ansible_host }}"
-
