@@ -14,9 +14,7 @@
 
 - name: Configure Proxy Server
   hosts: tag_proxies
-  become: true
-  #vars:
-  #  ansible_port: "{{ ssh_port }}"
+  gather_facts: false
   tasks:
     - name: Install Squid
       apt:
@@ -58,7 +56,6 @@
           - auditd
         state: present
 
-# obscure.yml additions
     - name: Configure SSH security
       lineinfile:
         path: /etc/ssh/sshd_config
@@ -70,6 +67,12 @@
         - {regexp: '^#?PasswordAuthentication', line: 'PasswordAuthentication no'}
         - {regexp: '^#?MaxAuthTries', line: 'MaxAuthTries 3'}
         - {regexp: '^#?LoginGraceTime', line: 'LoginGraceTime 30'}
+
+    - name: Add sudo group to allowed SSH users
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        line: "AllowGroups sudo"
+        insertbefore: "^PermitRootLogin"
 
     - name: Configure fail2ban for squid
       copy:
@@ -111,6 +114,14 @@
         state: present
         key: "{{ lookup('file', '~/.ssh/id_ed25519.pub', errors='ignore') or lookup('file', '~/.ssh/id_rsa.pub') }}"
 
+    - name: Allow handyman sudo without password
+      lineinfile:
+        path: /etc/sudoers.d/handyman
+        line: "handyman ALL=(ALL) NOPASSWD:ALL"
+        create: yes
+        mode: '0440'
+        validate: 'visudo -cf %s'
+
     - name: Install unattended-upgrades
       apt:
         name: unattended-upgrades
@@ -129,3 +140,8 @@
 
     - name: Run unattended-upgrades
       command: "unattended-upgrade || echo Ignored failure"
+
+    - name: 'Initiate Reboot without waiting - forces updated ssh to be used'
+      shell: 'sleep 1 && reboot -f && sleep 1'
+      async: 1
+      poll: 0

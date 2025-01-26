@@ -23,4 +23,12 @@ fi
 source .ports
 HOST="$REGION-proxy.$PROXY_DOMAIN"
 
-exec ssh -p "$SSH_PORT" "root@$HOST" "$@"
+remote_user=handyman
+case "$1" in
+-root)
+    remote_user=root
+    shift
+    ;;
+esac
+
+exec ssh -p "$SSH_PORT" "$remote_user@$HOST" "$@"

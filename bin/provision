@@ -117,6 +117,7 @@ create_cmd() {
 }
 
 obscure_cmd() {
+    export BOOT=1
     run_playbook "$1" obscure && update_cmd "$1"
 }
 
@@ -133,9 +134,14 @@ run_playbook() {
 
     instance_name="${region}-proxy"
     linode_region=${REGION_MAP[$region]}
+    extra_args=''
+    if [ -n "$BOOT" ]; then
+        extra_args='-e ansible_user=root'
+    fi
 
-    echo "Running:  ansible-playbook '$playbook.yml' -e 'instance_name=$instance_name' -e 'region=$linode_region'"
-    time ansible-playbook "$playbook.yml" -e "instance_name=$instance_name" -e "region=$linode_region"
+    echo "Running:  ansible-playbook '$playbook.yml' -e 'instance_name=$instance_name' -e 'region=$linode_region' $extra_args"
+    # shellcheck disable=SC2086
+    time ansible-playbook "$playbook.yml" -e "instance_name=$instance_name" -e "region=$linode_region" $extra_args
 }
 
 destroy_cmd() {
