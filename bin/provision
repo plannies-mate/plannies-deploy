@@ -91,7 +91,7 @@ check_dependencies() {
 
     # ansible-galaxy collection remove community.general 2>/dev/null || true
     for collection in linode.cloud ansible.posix; do
-        if ! ansible-galaxy collection list | grep "$collection"; then
+        if ! ansible-galaxy collection list | grep -q "$collection"; then
             echo "Installing $collection collection..."
             ansible-galaxy collection install "$collection"
         fi
@@ -100,7 +100,8 @@ check_dependencies() {
 
 verify_region()
 {
-      if [ -z "$1" ] || [[ ! "$REGIONS" =~ $1 ]]; then
+      export REGION="$1"
+      if [ -z "$1" ] || [[ ! "$REGIONS" =~ $REGION ]]; then
           echo "Error: Specify region: au|usa|eu"
           echo "Usage: $(basename "$0") $2 <region>"
           exit 1

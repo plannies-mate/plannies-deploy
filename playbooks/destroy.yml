@@ -1,7 +1,7 @@
 # destroy.yml
 ---
 - name: Destroy Proxy Instances
-  hosts: tag_proxies
+  hosts: localhost
   gather_facts: false
   vars_files:
     - ../vars/all.yml
@@ -9,15 +9,15 @@
     - name: Delete instance
       linode.cloud.instance:
         api_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
-        label: "{{ inventory_hostname }}"
+        label: "{{ instance_name }}"
         state: absent
       delegate_to: localhost
 
     - name: Remove DNS record
       linode.cloud.domain_record:
         api_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
-        domain: "{{ proxy_domain.split('.')[-2:] | join('.') }}"
+        domain: "{{ proxy_domain }}"
         type: "A"
-        name: "{{ proxy_domain.split('.')[0] }}"
+        name: "{{ instance_name }}"
         state: absent
       delegate_to: localhost

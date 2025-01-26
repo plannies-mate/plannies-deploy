@@ -9,7 +9,7 @@
     - name: Create Linode instance
       linode.cloud.instance:
         api_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
-        label: "au-proxy"
+        label: "{{ instance_name }}"
         tags: ["proxies"]
         type: "{{ linode_type }}"
         region: "{{ region }}"
@@ -27,9 +27,9 @@
     - name: Update DNS record
       linode.cloud.domain_record:
         api_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
-        domain: "{{ proxy_domain.split('.')[-2:] | join('.') }}"
+        domain: "{{ proxy_domain }}"
         type: "A"
-        name: "{{ proxy_domain.split('.')[0] }}"
+        name: "{{ instance_name }}"
         target: "{{ proxy_ip }}"
         ttl_sec: 300
         state: present

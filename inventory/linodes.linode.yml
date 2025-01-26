@@ -1,6 +1,10 @@
-plugin: linode
+# inventory/linodes.linode.yml
+---
+plugin: linode.cloud.instance
 keyed_groups:
   - key: labels
     prefix: tag
 strict: false
+tags:
+  - proxies
 api_token: '{{ lookup("env", "LINODE_API_TOKEN") }}'
