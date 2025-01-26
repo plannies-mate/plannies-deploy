@@ -16,7 +16,7 @@ for region in $REGIONS; do
 
     if host "$h" >/dev/null 2>&1; then
         ip=$(host "$h" | awk '{print $NF}')
-        if ssh -p "$SSH_PORT" -o ConnectTimeout=5 "handyman@$h" 'uptime -p' ; then
+        if ssh -p "$SSH_PORT" -o ConnectTimeout=5 "handyman@$h" 'uptime' ; then
             echo "Status: Running"
             echo "IP: $ip"
             echo "Proxy: http://$h:$PROXY_PORT/"

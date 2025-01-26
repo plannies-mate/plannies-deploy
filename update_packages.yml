@@ -15,6 +15,7 @@
           - ufw
           - auditd
           - squid
+          - squidclient
         state: present
 
     - name: Load nf_conntrack module
@@ -34,4 +35,3 @@
         name: net.netfilter.nf_conntrack_max
         value: '65536'
         state: present
-        

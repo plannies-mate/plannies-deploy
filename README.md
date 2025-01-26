@@ -24,12 +24,13 @@ sudo apt-get install direnv python3 python3-venv python3-pip
 
 1. copy .envrc.example to .envrc 
 2. set
-    - LINODE_API_TOKEN: Linode API token access
-    - PROXY_PASSWORD: Random Squid auth password
-    - PROXY_DOMAIN: A domain for proxy DNS that you 
-      have set the name servers so linode hosts the domain
-      - Note, linode will only serve the domain when you have
-        one or more VPS instances (AKA "linodes")
+
+  - LINODE_API_TOKEN: Linode API token access
+  - PROXY_PASSWORD: Random Squid auth password
+  - PROXY_DOMAIN: A domain for proxy DNS that you 
+    have set the name servers so linode hosts the domain
+    - Note, linode will only serve the domain when you have
+      one or more VPS instances (AKA "linodes")
 
 ## Create proxy box
 **You are responsible for the costs incurred!**

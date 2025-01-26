@@ -2,6 +2,8 @@
 region="$1"
 shift
 
+source .ports
+
 REGIONS="au usa eu"
 
 verify_region()
@@ -19,15 +21,16 @@ verify_region "$region" "status"
 h="$region-proxy.$PROXY_DOMAIN"
 
 echo "=== System Status ==="
-bin/ssh-proxy "$region" $* 'uptime -p'
+bin/ssh-proxy "$region" $* 'uptime'
 echo
 bin/ssh-proxy "$region" $* 'free -mw'
 
 echo -e "\n=== Security Status ==="
-bin/ssh-proxy "$region" $* 'fail2ban-client status'
+bin/ssh-proxy "$region" $* 'sudo fail2ban-client status'
 echo
-bin/ssh-proxy "$region" $* 'ufw status verbose'
+bin/ssh-proxy "$region" $* 'sudo ufw status verbose'
 
-echo -e "\n=== Squid Status ==="
-bin/ssh-proxy "$region" $* 'squidclient mgr:5min'
+# FIXME - squid perms
+# echo -e "\n=== Squid Status ==="
+# bin/ssh-proxy "$region" $* "sudo squidclient --port $PROXY_PORT -h localhost  mgr:5min"
 
