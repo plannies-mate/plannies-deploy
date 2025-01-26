@@ -134,8 +134,8 @@ run_playbook() {
     instance_name="${region}-proxy"
     linode_region=${REGION_MAP[$region]}
 
-    echo "Running:  ansible-playbook 'playbooks/$playbook.yml' -e 'instance_name=$instance_name' -e 'region=$linode_region'"
-    time ansible-playbook "playbooks/$playbook.yml" -e "instance_name=$instance_name" -e "region=$linode_region"
+    echo "Running:  ansible-playbook '$playbook.yml' -e 'instance_name=$instance_name' -e 'region=$linode_region'"
+    time ansible-playbook "$playbook.yml" -e "instance_name=$instance_name" -e "region=$linode_region"
 }
 
 destroy_cmd() {
@@ -143,8 +143,8 @@ destroy_cmd() {
 
     instance_name="${1}-proxy"
     ensure_linode_token
-    echo "Running: ansible-playbook playbooks/destroy.yml -e 'instance_name=$instance_name'"
-    time ansible-playbook playbooks/destroy.yml -e "instance_name=$instance_name"
+    echo "Running: ansible-playbook destroy.yml -e 'instance_name=$instance_name'"
+    time ansible-playbook destroy.yml -e "instance_name=$instance_name"
 }
 
 inventory_cmd() {

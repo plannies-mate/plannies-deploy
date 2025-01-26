@@ -1,9 +1,9 @@
 ---
 - name: Wait for SSH port
-  hosts: tag_needs_ssh_config
+  hosts: tag_proxies
   gather_facts: false
   tasks:
-    - name: Wait for default SSH port
+    - name: Wait for new SSH port
       delegate_to: localhost
       wait_for:
         delay: 1

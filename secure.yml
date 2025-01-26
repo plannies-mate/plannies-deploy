@@ -22,7 +22,12 @@
         regexp: '^#?Port '
         line: "Port {{ ssh_port }}"
         validate: '/usr/sbin/sshd -t -f %s'
-      notify: restart ssh
+#      notify: restart sshd
+
+    - name: restart ssh
+      service:
+        name: ssh
+        state: restarted
 
     - name: Remove needs_ssh_config tag
       delegate_to: localhost
@@ -32,9 +37,9 @@
         tags: ["proxies"]
         state: present
 
-  handlers:
-    - name: restart ssh
-      service:
-        name: ssh
-        state: restarted
+#  handlers:
+#    - name: restart ssh
+#      service:
+#        name: ssh
+#        state: restarted
 
