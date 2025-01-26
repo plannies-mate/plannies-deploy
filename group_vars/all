@@ -1,12 +1,11 @@
-# group_vars/all
+# vars/all.yml
 ---
-linode_type: "g6-nanode-1"
-linode_image: "linode/ubuntu24.04"
-region: "ap-southeast"
 proxy_password: "{{ lookup('env', 'PROXY_PASSWORD') | default('changeme', true) }}"
 proxy_domain: "{{ lookup('env', 'PROXY_DOMAIN') }}"
-dns_provider: "linode"
-dns_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
-ansible_python_interpreter: "{{ playbook_dir }}/../.venv/bin/python"
 ssh_port: "{{ lookup('file', playbook_dir + '/../.ports') | regex_search('SSH_PORT=(\\d+)','\\1') | first }}"
 proxy_port: "{{ lookup('file', playbook_dir + '/../.ports') | regex_search('PROXY_PORT=(\\d+)','\\1') | first }}"
+
+dns_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
+dns_provider: "linode"
+linode_type: "g6-nanode-1"
+linode_image: "linode/ubuntu24.04"

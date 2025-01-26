@@ -2,6 +2,9 @@
 ---
 - name: Destroy Proxy Instances
   hosts: localhost
+  vars_files:
+    - ../vars/localhost.yml
+    - ../group_vars/all
   gather_facts: false
   tasks:
     - name: Delete instance
