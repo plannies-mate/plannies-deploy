@@ -2,7 +2,7 @@
 ---
 plugin: linode.cloud.instance
 keyed_groups:
-  - key: labels
+  - key: tags
     prefix: tag
 strict: false
 tags:

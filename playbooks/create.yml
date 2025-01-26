@@ -24,6 +24,14 @@
       set_fact:
         proxy_ip: "{{ linode.instance.ipv4[0] }}"
 
+    - name: Add host to inventory
+      add_host:
+        name: "{{ instance_name }}"
+        groups: tag_proxies
+        ansible_host: "{{ proxy_ip }}"
+        ansible_user: root
+        ansible_ssh_common_args: '-o StrictHostKeyChecking=accept-new'
+
     - name: Update DNS record
       linode.cloud.domain_record:
         api_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
@@ -42,6 +50,10 @@
         timeout: 300
         search_regex: OpenSSH
 
+- name: Configure SSH server
+  hosts: "{{ instance_name }}"
+  become: true
+  tasks:
     - name: Configure SSH on custom port
       lineinfile:
         path: /etc/ssh/sshd_config
@@ -56,33 +68,14 @@
         state: started
         timeout: 30
 
-#    - name: Disable default SSH port
-#      lineinfile:
-#        path: /etc/ssh/sshd_config
-#        regexp: '^Port 22'
-#        state: absent
-#        validate: '/usr/sbin/sshd -t -f %s'
-#      notify: restart ssh
-
-    # Add handlers:
     - name: restart ssh
       service:
         name: ssh
         state: restarted
 
-    - name: Add host to inventory
-      add_host:
-        name: proxy
-        groups: proxy
-        ansible_host: "{{ proxy_ip }}"
-        ansible_user: root
-        ansible_ssh_common_args: '-o StrictHostKeyChecking=accept-new'
-
 - name: Configure proxy server
-  hosts: proxy
+  hosts: "{{ instance_name }}"
   become: true
-  vars_files:
-    - ../vars/all.yml
   tasks:
     - name: Create local user
       user:

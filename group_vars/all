@@ -1,4 +1,4 @@
-# vars/all.yml
+# group_vars/all
 ---
 linode_type: "g6-nanode-1"
 linode_image: "linode/ubuntu24.04"

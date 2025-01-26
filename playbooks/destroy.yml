@@ -3,8 +3,6 @@
 - name: Destroy Proxy Instances
   hosts: localhost
   gather_facts: false
-  vars_files:
-    - ../vars/all.yml
   tasks:
     - name: Delete instance
       linode.cloud.instance:
