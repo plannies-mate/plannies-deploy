@@ -3,7 +3,7 @@
 ansible_python_interpreter: /usr/bin/python3
 become: true
 become_user: root
-ansible_ssh_user: root
 iam_group_tag_proxies: true
 
-ansible_user: "{{ provision_user }}"
+ansible_ssh_user: "{{ provision_user }}"
+

@@ -1,7 +1,7 @@
 # Obscures the ssh port - more to stop endless door knocking
 # filling up logs than to significantly improve ssh security
 ---
-- name: Wait for SSH port
+- name: Wait for linode to boot up instance
   hosts: tag_needs_ssh_config
   gather_facts: false
   tasks:
@@ -24,11 +24,6 @@
         regexp: '^#?Port '
         line: "Port {{ ssh_port }}"
         validate: '/usr/sbin/sshd -t -f %s'
-
-    - name: 'Initiate Reboot without waiting - forces updated ssh to be used'
-      shell: 'sleep 1 && reboot -f && sleep 1'
-      async: 1
-      poll: 0
 
     - name: Remove needs_ssh_config tag
       delegate_to: localhost

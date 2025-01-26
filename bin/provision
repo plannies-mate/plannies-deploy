@@ -67,7 +67,6 @@ setup_venv() {
     fi
     PATH=$(echo "$PATH" | tr ':' '\n' | grep -v "conda" | tr '\n' ':')
     export PATH
-    echo "PATH=$PATH"
     if [ ! -d "$VENV_DIR" ]; then
         echo "Creating Python virtual environment..."
         python3 -m venv "$VENV_DIR"
@@ -113,21 +112,28 @@ verify_region()
 }
 
 create_cmd() {
-    run_playbook "$1" create && obscure_cmd "$1"
+    region="$1"
+    shift
+    run_playbook "$region" create "$@" && obscure_cmd "$region" "$@"
 }
 
 obscure_cmd() {
+    region="$1"
+    shift
     export BOOT=1
-    run_playbook "$1" obscure && update_cmd "$1"
+    run_playbook "$region" obscure "$@" && update_cmd "$region" "$@"
 }
 
 update_cmd() {
-    run_playbook "$1" update
+    region="$1"
+    shift
+    run_playbook "$region" update "$@" && echo "Sleeping 90 seconds ..." && sleep 90 && status_cmd "$region" && bin/test_proxy "$region"
 }
 
 run_playbook() {
     region="$1"
     playbook="$2"
+    shift 2
     verify_region "$region" "$playbook"
     ensure_linode_token
     ensure_proxy_domain
@@ -136,21 +142,23 @@ run_playbook() {
     linode_region=${REGION_MAP[$region]}
     extra_args=''
     if [ -n "$BOOT" ]; then
-        extra_args='-e ansible_user=root'
+        extra_args='-e ansible_ssh_user=root -e ansible_ssh_port=22'
     fi
 
-    echo "Running:  ansible-playbook '$playbook.yml' -e 'instance_name=$instance_name' -e 'region=$linode_region' $extra_args"
+    echo "Running: ansible-playbook '$playbook.yml' -e 'instance_name=$instance_name' -e 'region=$linode_region' $extra_args $*"
     # shellcheck disable=SC2086
-    time ansible-playbook "$playbook.yml" -e "instance_name=$instance_name" -e "region=$linode_region" $extra_args
+    time ansible-playbook "$playbook.yml" -e "instance_name=$instance_name" -e "region=$linode_region" $extra_args "$@"
 }
 
 destroy_cmd() {
-    verify_region "$1" destroy
+    region="$1"
+    shift
+    verify_region "$region" destroy
 
-    instance_name="${1}-proxy"
+    instance_name="${region}-proxy"
     ensure_linode_token
     echo "Running: ansible-playbook destroy.yml -e 'instance_name=$instance_name'"
-    time ansible-playbook destroy.yml -e "instance_name=$instance_name"
+    time ansible-playbook destroy.yml -e "instance_name=$instance_name" "$@"
 }
 
 inventory_cmd() {
@@ -177,6 +185,7 @@ inventory_cmd() {
 }
 
 clobber_cmd() {
+    echo "Running bin/clobber"
     bin/clobber
 }
 
@@ -185,10 +194,14 @@ links_cmd() {
 }
 
 status_cmd() {
+    one_region="$1"
     ensure_linode_token
     ensure_proxy_domain
 
     for region in $REGIONS; do
+        if [ -n "$one_region" ] && [ "$region" != "$one_region" ] ; then
+            continue
+        fi
         h="$region-proxy.$PROXY_DOMAIN"
         echo -e "\n=== $h ==="
 
@@ -231,7 +244,7 @@ generate_ports() {
 }
 
 load_ports() {
-    if [[ ! -f "$PORTS_FILE" ]]; then
+    if [ ! -s "$PORTS_FILE" ]; then
         generate_ports
     fi
     # shellcheck disable=SC1090
@@ -270,3 +283,4 @@ case "$command" in
         fi
         ;;
 esac
+
