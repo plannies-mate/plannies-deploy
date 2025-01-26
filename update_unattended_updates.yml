@@ -1,0 +1,25 @@
+- name: Unattended Updates
+  hosts: tag_proxies
+  gather_facts: false
+  become: true
+  become_user: root
+  tasks:
+
+    - name: Install unattended-upgrades
+      apt:
+        name: unattended-upgrades
+        state: present
+        update_cache: yes
+
+    - name: Run unattended-upgrades
+      command: "unattended-upgrade || echo Ignored failure"
+
+    - name: Configure unattended-upgrades
+      command: dpkg-reconfigure -f noninteractive unattended-upgrades
+
+    - name: Enable unattended-upgrades
+      copy:
+        content: |
+          APT::Periodic::Update-Package-Lists "1";
+          APT::Periodic::Unattended-Upgrade "1";
+        dest: /etc/apt/apt.conf.d/20auto-upgrades

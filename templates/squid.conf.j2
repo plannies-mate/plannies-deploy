@@ -1,0 +1,59 @@
+# Enhanced squid.conf template
+auth_param basic program /usr/lib/squid/basic_ncsa_auth /etc/squid/passwd
+auth_param basic realm proxy
+auth_param basic credentialsttl 2 hours
+auth_param basic casesensitive on
+
+# Access controls
+acl authenticated proxy_auth REQUIRED
+acl ssl_ports port 443
+acl safe_ports port 80 443 # Add other ports as needed
+acl CONNECT method CONNECT
+
+# Deny rules first
+http_access deny !safe_ports
+http_access deny CONNECT !ssl_ports
+http_access deny to_localhost
+http_access deny manager
+
+# Rate limiting
+delay_pools 1
+delay_class 1 2
+delay_parameters 1 -1/-1 10000/20000
+delay_access 1 allow authenticated
+
+# Allow authenticated users
+http_access allow authenticated
+http_access deny all
+
+# Configure port and client specifications
+http_port {{proxy_port}}
+maximum_object_size 1024 MB
+client_lifetime 1 hour
+request_timeout 2 minutes
+
+# Privacy/security settings
+forwarded_for delete
+via off
+header_access X-Forwarded-For deny all
+header_access Via deny all
+header_access Cache-Control allow all
+header_replace User-Agent Masked-Agent
+header_access All deny all
+
+# Cache settings
+cache deny all  # Disable caching for privacy
+
+# Logging
+logformat custom %>a %[ui %[un [%tl] "%rm %ru HTTP/%rv" %>Hs %<st "%{Referer}>h" "%{User-Agent}>h" %Ss:%Sh
+access_log /var/log/squid/access.log custom
+cache_log /var/log/squid/cache.log
+
+request_header_access X-Forwarded-For deny all
+request_header_access Via deny all
+reply_header_access Server deny all
+reply_header_access X-Cache deny all
+
+# Memory tuning
+cache_mem 384 MB
+maximum_object_size 32 MB

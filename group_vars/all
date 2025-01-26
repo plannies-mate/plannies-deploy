@@ -1,0 +1,16 @@
+# group_vars/all
+---
+proxy_password: "{{ lookup('env', 'PROXY_PASSWORD') | default('changeme', true) }}"
+proxy_domain: "{{ lookup('env', 'PROXY_DOMAIN') }}"
+ssh_port: "{{ lookup('file', playbook_dir + '/.ports') | regex_search('SSH_PORT=(\\d+)','\\1') | first }}"
+proxy_port: "{{ lookup('file', playbook_dir + '/.ports') | regex_search('PROXY_PORT=(\\d+)','\\1') | first }}"
+
+dns_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
+dns_provider: "linode"
+linode_type: "g6-nanode-1"
+linode_image: "linode/ubuntu24.04"
+
+ansible_ssh_port: "{{ ssh_port }}"
+iam_group_all: true
+
+provision_user: handyman

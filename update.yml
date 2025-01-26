@@ -1,0 +1,39 @@
+---
+
+- import_playbook: update_packages.yml
+- import_playbook: update_users.yml
+- import_playbook: update_squid.yml
+- import_playbook: update_ssh.yml
+- import_playbook: update_firewall.yml
+- import_playbook: update_unattended_updates.yml
+
+- name: Configure Proxy Server - Reboot
+  hosts: tag_proxies
+  gather_facts: false
+  become: true
+  become_user: root
+  tasks:
+
+    - name: 'Initiate Reboot without waiting - forces updated ssh to be used'
+      shell: 'sleep 1 && reboot -f && sleep 1'
+      async: 1
+      poll: 0
+
+- name: Configure Proxy Server - Wait for reboot
+  hosts: tag_proxies
+  gather_facts: false
+  tasks:
+    - name: Wait for new SSH port
+      delegate_to: localhost
+      wait_for:
+        delay: 1
+        port: "{{ ssh_port }}"
+        timeout: 180
+        state: started
+        host: "{{ ansible_host }}"
+      register: wait_result
+
+    - name: Show wait duration
+      debug:
+        msg: "Waited {{ wait_result.elapsed }} seconds for SSH port {{ ssh_port }}"
+        

@@ -1,0 +1,73 @@
+- name: Squid http proxy
+  hosts: tag_proxies
+  gather_facts: false
+  become: true
+  become_user: root
+  tasks:
+    - name: Configure Squid
+      template:
+        src: templates/squid.conf.j2
+        dest: /etc/squid/squid.conf
+
+    - name: Install apache2-utils for htpasswd
+      apt:
+        name: apache2-utils
+        state: present
+
+    - name: Create auth file
+      shell: |
+        htpasswd -bc /etc/squid/passwd morph '{{ proxy_password }}'
+        chown proxy:proxy /etc/squid/passwd
+        chmod 640 /etc/squid/passwd
+
+    - name: Configure fail2ban for squid
+      copy:
+        dest: /etc/fail2ban/jail.d/squid.conf
+        content: |
+          [squid]
+          enabled = true
+          filter = squid
+          logpath = /var/log/squid/access.log
+          maxretry = 3
+          findtime = 600
+          bantime = 3600
+
+    - name: Configure squid logrotate
+      copy:
+        dest: /etc/logrotate.d/squid
+        content: |
+          /var/log/squid/*.log {
+          daily
+          rotate 7
+          compress
+          delaycompress
+          missingok
+          nocreate
+          sharedscripts
+          postrotate
+          /usr/bin/systemctl reload squid
+          endscript
+          }
+
+    - name: Create systemd override directory for squid
+      file:
+        path: /etc/systemd/system/squid.service.d
+        state: directory
+
+    - name: Add Squid memory limits
+      copy:
+        dest: /etc/systemd/system/squid.service.d/override.conf
+        content: |
+          [Service]
+          MemoryHigh=512M
+          MemoryMax=768M
+
+    - name: Add Squid security config
+      blockinfile:
+        path: /etc/squid/squid.conf
+        block: |
+          request_header_access From deny all
+          request_header_access Via deny all
+          forwarded_for delete
+
+          

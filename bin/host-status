@@ -1,0 +1,36 @@
+#!/bin/bash
+region="$1"
+shift
+
+source .ports
+
+REGIONS="au usa eu"
+
+verify_region()
+{
+      export REGION="$1"
+      if [ -z "$1" ] || [[ ! "$REGIONS" =~ $REGION ]]; then
+          echo "Error: Specify region: au|usa|eu"
+          echo "Usage: $(basename "$0") <region>"
+          exit 1
+      fi
+}
+
+verify_region "$region" "status"
+
+h="$region-proxy.$PROXY_DOMAIN"
+
+echo "=== System Status ==="
+bin/ssh-proxy "$region" $* 'uptime'
+echo
+bin/ssh-proxy "$region" $* 'free -mw'
+
+echo -e "\n=== Security Status ==="
+bin/ssh-proxy "$region" $* 'sudo fail2ban-client status'
+echo
+bin/ssh-proxy "$region" $* 'sudo ufw status verbose'
+
+# FIXME - squid perms
+# echo -e "\n=== Squid Status ==="
+# bin/ssh-proxy "$region" $* "sudo squidclient --port $PROXY_PORT -h localhost  mgr:5min"
+
