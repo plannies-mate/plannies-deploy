@@ -1,39 +1,50 @@
-# templates/squid.conf.j2
+# Enhanced squid.conf template
 auth_param basic program /usr/lib/squid/basic_ncsa_auth /etc/squid/passwd
 auth_param basic realm proxy
+auth_param basic credentialsttl 2 hours
+auth_param basic casesensitive on
+
+# Access controls
 acl authenticated proxy_auth REQUIRED
+acl ssl_ports port 443
+acl safe_ports port 80 443 # Add other ports as needed
+acl CONNECT method CONNECT
+
+# Deny rules first
+http_access deny !safe_ports
+http_access deny CONNECT !ssl_ports
+http_access deny to_localhost
+http_access deny manager
+
+# Rate limiting
+delay_pools 1
+delay_class 1 2
+delay_parameters 1 -1/-1 10000/20000
+delay_access 1 allow authenticated
+
+# Allow authenticated users
 http_access allow authenticated
 http_access deny all
 
-http_port {{ proxy_port }}
+# Configure port and client specifications
+http_port {{proxy_port}}
+maximum_object_size 1024 MB
+client_lifetime 1 hour
+request_timeout 2 minutes
 
-forwarded_for off
-request_header_access Allow allow all
-request_header_access Authorization allow all
-request_header_access WWW-Authenticate allow all
-request_header_access Proxy-Authorization allow all
-request_header_access Proxy-Authenticate allow all
-request_header_access Cache-Control allow all
-request_header_access Content-Encoding allow all
-request_header_access Content-Length allow all
-request_header_access Content-Type allow all
-request_header_access Date allow all
-request_header_access Expires allow all
-request_header_access Host allow all
-request_header_access If-Modified-Since allow all
-request_header_access Last-Modified allow all
-request_header_access Location allow all
-request_header_access Pragma allow all
-request_header_access Accept allow all
-request_header_access Accept-Charset allow all
-request_header_access Accept-Encoding allow all
-request_header_access Accept-Language allow all
-request_header_access Content-Language allow all
-request_header_access Mime-Version allow all
-request_header_access Retry-After allow all
-request_header_access Title allow all
-request_header_access Connection allow all
-request_header_access Proxy-Connection allow all
-request_header_access User-Agent allow all
-request_header_access Cookie allow all
-request_header_access All deny all
+# Privacy/security settings
+forwarded_for delete
+via off
+header_access X-Forwarded-For deny all
+header_access Via deny all
+header_access Cache-Control allow all
+header_replace User-Agent Masked-Agent
+header_access All deny all
+
+# Cache settings
+cache deny all  # Disable caching for privacy
+
+# Logging
+logformat custom %>a %[ui %[un [%tl] "%rm %ru HTTP/%rv" %>Hs %<st "%{Referer}>h" "%{User-Agent}>h" %Ss:%Sh
+access_log /var/log/squid/access.log custom
+cache_log /var/log/squid/cache.log

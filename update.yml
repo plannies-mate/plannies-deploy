@@ -49,3 +49,37 @@
         port: "{{ proxy_port }}"
         timeout: 180
         state: started
+
+    - name: Install security packages
+      apt:
+        name:
+          - fail2ban
+          - ufw
+          - auditd
+        state: present
+
+    - name: Configure fail2ban for squid
+      copy:
+        dest: /etc/fail2ban/jail.d/squid.conf
+        content: |
+          [squid]
+          enabled = true
+          filter = squid
+          logpath = /var/log/squid/access.log
+          maxretry = 3
+          findtime = 600
+          bantime = 3600
+
+    - name: Configure UFW
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop:
+        - "{{ ssh_port }}"
+        - "{{ proxy_port }}"
+
+    - name: Enable UFW
+      ufw:
+        state: enabled
+        policy: deny
