@@ -1,30 +1,65 @@
 # down_under
-Ansible provisioner to create and destroy Aussie or other linode proxies
+Ansible provisioner to create and destroy Aussie , USA or EU linode proxies.
 
+The main purpose for existing is to provide a proxy url for
+testing morph.io scrapers you are working on.
 
-# Links
+For example setting MORPH_AUSTRALIAN_PROXY
+to http://user:passowrd@au-proxy.exmple.com:43210/
 
-* [Linode ansible guide](https://www.linode.com/docs/guides/deploy-linodes-using-linode-ansible-collection/)
-* 
+## Requirements
+ 
+* Linode account with API token
+* Domain with DNS managed by Linode
+* Ubuntu linux box (real or virtual)
+ 
+## Installing
 
-# Core Components Analysis
+```bash
+git clone https://github.com/ianheggie/down_under.git
+sudo apt-get install direnv python3 python3-venv python3-pip
+```
 
-## Configuration Flow
-1. Environment Variables
-    - LINODE_API_TOKEN: Linode API access
-    - PROXY_PASSWORD: Squid auth password
-    - PROXY_DOMAIN: Base domain for proxy DNS
+## Configuration
 
-2. Port Management (.ports)
-    - SSH_PORT: Random 40000-45000
-    - PROXY_PORT: Random 45001-50000
-    - Generated on first run
-    - Used by Ansible via group_vars/all
+1. copy .envrc.example to .envrc 
+2. set
+    - LINODE_API_TOKEN: Linode API token access
+    - PROXY_PASSWORD: Random Squid auth password
+    - PROXY_DOMAIN: A domain for proxy DNS that you 
+      have set the name servers so linode hosts the domain
+      - Note, linode will only serve the domain when you have
+        one or more VPS instances (AKA "linodes")
 
-3. Inventory Structure
-    - Dynamic: linodes.linode.yml (tag: proxies)
-    - Static: localhost.yml for local execution
-    - Host groups: proxies, localhost
+## Create proxy box
+**You are responsible for the costs incurred!**
+**This project creates a 1GB Nanobox VPS system!**
+
+```bash
+bin/provision create au # or usa or eu
+```
+
+## Destroy proxy box
+
+```bash
+bin/provision destroy au # or usa or eu
+```
+
+## Technical details
+
+### Port Management 
+
+- Stored in .ports file:
+- SSH_PORT: Random 40000-45000
+- PROXY_PORT: Random 45001-50000
+- Generated on first run
+- Used by Ansible via group_vars/all
+
+### Inventory Structure
+
+- Dynamic: linodes.linode.yml (tag: proxies)
+- Static: localhost.yml for local execution
+- Host groups: proxies, localhost
 
 ## Key Workflows
 
@@ -44,21 +79,21 @@ Ansible provisioner to create and destroy Aussie or other linode proxies
    - Remove Linode instance
    - Clean up DNS record
    ```
+### Other commands
+
+* bin/provision - provides a list of commands and what they do
+* bin/test_proxy - tests the proxy behaves as expected, 
+  runs automatically after create
+* bin/host-status - runs various status commands on the proxy host
+* bin/ssh-proxy - ssh to handyman user on proxy host
+  with sudo perms
 
 ## Testing Plan
 
-1. Creation Testing
-    - Run: bin/provision create au
-    - Verify:
-        * Instance created with correct specs
-        * SSH accessible on custom port
-        * Squid proxy running on custom port
-        * DNS record matches IP
-        * Auth works with PROXY_PASSWORD
-
 2. Port Transition
+    - destroy proxy host 
     - Delete .ports and regenerate
-    - Verify SSH and proxy ports update
+    - Verify SSH and proxy ports use new values
     - Check connectivity on new ports
 
 3. Proxy Authentication
@@ -67,11 +102,8 @@ Ansible provisioner to create and destroy Aussie or other linode proxies
       export proxy="http://morph:${PROXY_PASSWORD}@au-proxy.${PROXY_DOMAIN}:${PROXY_PORT}"
       curl -x $proxy http://example.com
       ```
+    - OR test with bin/test_proxy
 
-4. Status Check
-    - Run: bin/provision status
-    - Verify reports:
-        * DNS resolution
-        * SSH connectivity
-        * Proxy availability
-        * Uptime information
+# Links
+
+* [Linode ansible guide](https://www.linode.com/docs/guides/deploy-linodes-using-linode-ansible-collection/)

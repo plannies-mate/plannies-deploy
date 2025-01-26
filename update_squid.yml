@@ -49,9 +49,14 @@
           endscript
           }
 
+    - name: Create systemd override directory for squid
+      file:
+        path: /etc/systemd/system/squid.service.d
+        state: directory
+
     - name: Add Squid memory limits
-      systemd:
-        path: /etc/systemd/system/squid.service.d/override.conf
+      copy:
+        dest: /etc/systemd/system/squid.service.d/override.conf
         content: |
           [Service]
           MemoryHigh=512M
