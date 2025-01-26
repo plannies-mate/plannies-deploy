@@ -1,3 +1,5 @@
+# Obscures the ssh port - more to stop endless door knocking
+# filling up logs than to significantly improve ssh security
 ---
 - name: Wait for SSH port
   hosts: tag_needs_ssh_config

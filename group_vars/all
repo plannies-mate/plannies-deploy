@@ -12,3 +12,5 @@ linode_image: "linode/ubuntu24.04"
 
 ansible_ssh_port: "{{ ssh_port }}"
 iam_group_all: true
+
+provision_user: handyman

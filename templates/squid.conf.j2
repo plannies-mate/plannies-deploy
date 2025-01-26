@@ -48,3 +48,12 @@ cache deny all  # Disable caching for privacy
 logformat custom %>a %[ui %[un [%tl] "%rm %ru HTTP/%rv" %>Hs %<st "%{Referer}>h" "%{User-Agent}>h" %Ss:%Sh
 access_log /var/log/squid/access.log custom
 cache_log /var/log/squid/cache.log
+
+request_header_access X-Forwarded-For deny all
+request_header_access Via deny all
+reply_header_access Server deny all
+reply_header_access X-Cache deny all
+
+# Memory tuning
+cache_mem 384 MB
+maximum_object_size 32 MB

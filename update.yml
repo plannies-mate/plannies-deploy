@@ -58,6 +58,19 @@
           - auditd
         state: present
 
+# obscure.yml additions
+    - name: Configure SSH security
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        validate: '/usr/sbin/sshd -t -f %s'
+      loop:
+        - {regexp: '^#?PermitRootLogin', line: 'PermitRootLogin no'}
+        - {regexp: '^#?PasswordAuthentication', line: 'PasswordAuthentication no'}
+        - {regexp: '^#?MaxAuthTries', line: 'MaxAuthTries 3'}
+        - {regexp: '^#?LoginGraceTime', line: 'LoginGraceTime 30'}
+
     - name: Configure fail2ban for squid
       copy:
         dest: /etc/fail2ban/jail.d/squid.conf
@@ -83,3 +96,36 @@
       ufw:
         state: enabled
         policy: deny
+
+    # Add to update.yml tasks:
+    - name: Create handyman user
+      user:
+        name: "{{ provision_user }}"
+        shell: /bin/bash
+        groups: sudo
+        append: yes
+
+    - name: Set up SSH for handyman
+      authorized_key:
+        user: "{{ provision_user }}"
+        state: present
+        key: "{{ lookup('file', '~/.ssh/id_ed25519.pub', errors='ignore') or lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+    - name: Install unattended-upgrades
+      apt:
+        name: unattended-upgrades
+        state: present
+        update_cache: yes
+
+    - name: Enable unattended-upgrades
+      copy:
+        content: |
+          APT::Periodic::Update-Package-Lists "1";
+          APT::Periodic::Unattended-Upgrade "1";
+        dest: /etc/apt/apt.conf.d/20auto-upgrades
+
+    - name: Configure unattended-upgrades
+      command: dpkg-reconfigure -f noninteractive unattended-upgrades
+
+    - name: Run unattended-upgrades
+      command: "unattended-upgrade || echo Ignored failure"

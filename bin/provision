@@ -6,7 +6,7 @@ declare -A REGION_MAP
 
 # Commands setup
 COMMANDS+=("create")
-COMMANDS+=("secure")
+COMMANDS+=("obscure")
 COMMANDS+=("update")
 COMMANDS+=("destroy")
 COMMANDS+=("inventory")
@@ -15,8 +15,8 @@ COMMANDS+=("links")
 COMMANDS+=("log")
 COMMANDS+=("status")
 
-COMMANDS_DESC["create"]="Create a new proxy instance and then secure (au|usa|eu)"
-COMMANDS_DESC["secure"]="Secure (change) ssh port and then update (au|usa|eu)"
+COMMANDS_DESC["create"]="Create a new proxy instance and then obscure (au|usa|eu)"
+COMMANDS_DESC["obscure"]="Obscure (change) ssh port and then update (au|usa|eu)"
 COMMANDS_DESC["update"]="Complete provisioning (au|usa|eu)"
 COMMANDS_DESC["destroy"]="Destroy an existing proxy instance"
 COMMANDS_DESC["inventory"]="List all proxy instances"
@@ -113,11 +113,11 @@ verify_region()
 }
 
 create_cmd() {
-    run_playbook "$1" create && secure_cmd "$1"
+    run_playbook "$1" create && obscure_cmd "$1"
 }
 
-secure_cmd() {
-    run_playbook "$1" secure && update_cmd "$1"
+obscure_cmd() {
+    run_playbook "$1" obscure && update_cmd "$1"
 }
 
 update_cmd() {
