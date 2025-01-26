@@ -1,0 +1,31 @@
+---
+- name: Create Proxy Instance
+  hosts: localhost
+  gather_facts: false
+  #vars_files:
+  #  - host_vars/localhost
+  #  - group_vars/all
+  tasks:
+    - name: Create Linode instance
+      linode.cloud.instance:
+        api_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
+        label: "{{ instance_name }}"
+        tags: ["proxies", "needs_ssh_config"]
+        type: "{{ linode_type }}"
+        region: "{{ region }}"
+        image: "{{ linode_image }}"
+        root_pass: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+        authorized_keys:
+          - "{{ lookup('file', '~/.ssh/id_ed25519.pub', errors='ignore') or lookup('file', '~/.ssh/id_rsa.pub') }}"
+        state: present
+      register: linode
+
+    - name: Update DNS record
+      linode.cloud.domain_record:
+        api_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
+        domain: "{{ proxy_domain }}"
+        type: "A"
+        name: "{{ instance_name }}"
+        target: "{{ linode.instance.ipv4[0] }}"
+        ttl_sec: 300
+        state: present

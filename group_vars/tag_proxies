@@ -1,0 +1,7 @@
+# group_vars/tag_proxies
+---
+ansible_python_interpreter: auto
+become: true
+become_user: root
+ansible_ssh_user: root
+iam_group_tag_proxies: true

@@ -1,0 +1,40 @@
+---
+- name: Wait for SSH port
+  hosts: tag_needs_ssh_config
+  gather_facts: false
+  tasks:
+    - name: Wait for default SSH port
+      delegate_to: localhost
+      wait_for:
+        delay: 1
+        port: 22
+        timeout: 180
+        state: started
+        host: "{{ ansible_host }}"
+
+- name: Change SSH Server Port
+  hosts: tag_needs_ssh_config
+  gather_facts: false
+  tasks:
+    - name: Configure SSH port
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?Port '
+        line: "Port {{ ssh_port }}"
+        validate: '/usr/sbin/sshd -t -f %s'
+      notify: restart ssh
+
+    - name: Remove needs_ssh_config tag
+      delegate_to: localhost
+      linode.cloud.instance:
+        api_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
+        label: "{{ instance_name }}"
+        tags: ["proxies"]
+        state: present
+
+  handlers:
+    - name: restart ssh
+      service:
+        name: ssh
+        state: restarted
+

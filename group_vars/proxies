@@ -1,5 +1,0 @@
-# group_vars/proxies
----
-ansible_python_interpreter: auto
-ansible_become: true
-

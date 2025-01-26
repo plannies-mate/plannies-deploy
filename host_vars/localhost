@@ -1,0 +1,5 @@
+# vars/localhost.yml
+---
+ansible_connection: local
+ansible_python_interpreter: "{{ playbook_dir }}/.venv/bin/python"
+iam_host_localhost: true
