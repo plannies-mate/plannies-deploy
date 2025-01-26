@@ -1,0 +1,266 @@
+#!/bin/bash
+
+COMMANDS=()
+declare -A COMMANDS_DESC
+declare -A REGION_MAP
+
+# Commands setup
+COMMANDS+=("create")
+COMMANDS+=("secure")
+COMMANDS+=("update")
+COMMANDS+=("destroy")
+COMMANDS+=("inventory")
+COMMANDS+=("clobber")
+COMMANDS+=("links")
+COMMANDS+=("log")
+COMMANDS+=("status")
+
+COMMANDS_DESC["create"]="Create a new proxy instance and then secure (au|usa|eu)"
+COMMANDS_DESC["secure"]="Secure (change) ssh port and then update (au|usa|eu)"
+COMMANDS_DESC["update"]="Complete provisioning (au|usa|eu)"
+COMMANDS_DESC["destroy"]="Destroy an existing proxy instance"
+COMMANDS_DESC["inventory"]="List all proxy instances"
+COMMANDS_DESC["clobber"]="Remove virtualenv, temporary and log files"
+COMMANDS_DESC["links"]="Show useful Linode API reference links"
+COMMANDS_DESC["log"]="Show logs for instance"
+COMMANDS_DESC["status"]="Show status of instances"
+
+# Region mappings
+REGION_MAP["au"]="ap-southeast"
+REGION_MAP["usa"]="us-west"
+REGION_MAP["eu"]="eu-west"
+REGIONS="au usa eu"
+
+VENV_DIR=".venv"
+DEFAULT_TAIL_LINES=200
+
+help_cmd() {
+    echo "Usage: $(basename $0) <command> [options]"
+    echo "Commands:"
+    for cmd in "${COMMANDS[@]}"; do
+        printf "  %-15s %s\n" "$cmd" "${COMMANDS_DESC[$cmd]}"
+    done
+}
+
+ensure_linode_token() {
+    if [ -z "$LINODE_API_TOKEN" ]; then
+        echo "Error: LINODE_API_TOKEN environment variable not set"
+        exit 1
+    fi
+}
+
+ensure_proxy_domain() {
+    if [ -z "$PROXY_DOMAIN" ]; then
+        echo "Error: PROXY_DOMAIN environment variable not set"
+        exit 1
+    fi
+}
+
+setup_venv() {
+    # First deactivate any active Python environment
+    if [ -n "$CONDA_EXE" ]; then
+        $CONDA_EXE deactivate || echo Ignoring conda error
+    fi
+    hash -r
+    if type deactivate >/dev/null 2>&1; then
+        deactivate
+    fi
+    PATH=$(echo "$PATH" | tr ':' '\n' | grep -v "conda" | tr '\n' ':')
+    export PATH
+    echo "PATH=$PATH"
+    if [ ! -d "$VENV_DIR" ]; then
+        echo "Creating Python virtual environment..."
+        python3 -m venv "$VENV_DIR"
+    fi
+    # shellcheck disable=SC2010
+    if ls -l .venv/bin/python* | grep conda ; then
+        echo "ERROR: venv still tangled with conda! Aborting"
+        exit 2
+    fi
+    source "$VENV_DIR/bin/activate"
+}
+
+
+check_dependencies() {
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo "Installing python3..."
+        sudo apt install -y python3 python3-venv python3-pip
+    fi
+
+    setup_venv
+
+    if [ -f requirements.txt ]; then
+        pip install -r requirements.txt | grep -v 'Requirement already satisfied:' || true
+     fi
+
+    # ansible-galaxy collection remove community.general 2>/dev/null || true
+    for collection in linode.cloud ansible.posix; do
+        if ! ansible-galaxy collection list | grep -q "$collection"; then
+            echo "Installing $collection collection..."
+            ansible-galaxy collection install "$collection"
+        fi
+    done
+}
+
+verify_region()
+{
+      export REGION="$1"
+      if [ -z "$1" ] || [[ ! "$REGIONS" =~ $REGION ]]; then
+          echo "Error: Specify region: au|usa|eu"
+          echo "Usage: $(basename "$0") $2 <region>"
+          exit 1
+      fi
+}
+
+create_cmd() {
+    run_playbook "$1" create && secure_cmd "$1"
+}
+
+secure_cmd() {
+    run_playbook "$1" secure && update_cmd "$1"
+}
+
+update_cmd() {
+    run_playbook "$1" update
+}
+
+run_playbook() {
+    region="$1"
+    playbook="$2"
+    verify_region "$region" "$playbook"
+    ensure_linode_token
+    ensure_proxy_domain
+
+    instance_name="${region}-proxy"
+    linode_region=${REGION_MAP[$region]}
+
+    echo "Running:  ansible-playbook '$playbook.yml' -e 'instance_name=$instance_name' -e 'region=$linode_region'"
+    time ansible-playbook "$playbook.yml" -e "instance_name=$instance_name" -e "region=$linode_region"
+}
+
+destroy_cmd() {
+    verify_region "$1" destroy
+
+    instance_name="${1}-proxy"
+    ensure_linode_token
+    echo "Running: ansible-playbook destroy.yml -e 'instance_name=$instance_name'"
+    time ansible-playbook destroy.yml -e "instance_name=$instance_name"
+}
+
+inventory_cmd() {
+    ensure_linode_token
+
+    echo "=== Linode Instances ==="
+    instances=$(curl -s -H "Authorization: Bearer $LINODE_API_TOKEN" \
+        "https://api.linode.com/v4/linode/instances" | jq -r '.data[]')
+
+    if [ -z "$instances" ]; then
+        echo "No proxy instances found"
+    else
+        printf "%-20s %-15s %-12s %-20s %s\n" "NAME" "IP" "REGION" "CREATED" "TAGS"
+        echo "--------------------------------------------------------------------------------"
+        echo "$instances" | jq -r '.label + " " + (.ipv4[0]|tostring) + " " + .region + " " + .created + " " + (if .tags then (.tags|join(",")) else "-" end)' | \
+        while read -r name ip region created tags; do
+            printf "%-20s %-15s %-12s %-20s %s\n" \
+                "$name" "$ip" "$region" "$(date -d "$created" '+%Y-%m-%d %H:%M')" "$tags"
+        done
+    fi
+
+    echo -e "\n=== Ansible Inventory ==="
+    ansible-inventory --list | jq '.'
+}
+
+clobber_cmd() {
+    bin/clobber
+}
+
+links_cmd() {
+    cat files/links.txt
+}
+
+status_cmd() {
+    ensure_linode_token
+    ensure_proxy_domain
+
+    for region in $REGIONS; do
+        h="$region-proxy.$PROXY_DOMAIN"
+        echo -e "\n=== $h ==="
+
+        if host "$h" >/dev/null 2>&1; then
+            ip=$(host "$h" | awk '{print $NF}')
+            if ssh -p "$SSH_PORT" -o ConnectTimeout=5 "root@$h" 'uptime -p' >/dev/null 2>&1; then
+                echo "Status: Running"
+                echo "IP: $ip"
+                echo "Proxy: http://$h:$PROXY_PORT/"
+                echo "SSH: ssh -p $SSH_PORT root@$h"
+                echo "HTTP_PROXY=http://morph:$PROXY_PASSWORD@$h:$PROXY_PORT/"
+            else
+                echo "Status: Unreachable (DNS record exists but host down)"
+            fi
+        else
+            echo "Status: Not found (no DNS record)"
+        fi
+    done
+}
+
+log_cmd() {
+    region="$1"
+    verify_region "$region" log
+    h="$region-proxy.$PROXY_DOMAIN"
+
+    local tail_args="${*:--n $DEFAULT_TAIL_LINES}"
+    # shellcheck disable=SC2029
+    ssh "root@$h" "tail $tail_args /var/log/squid/access.log"
+}
+
+
+# Port handling
+PORTS_FILE=".ports"
+
+generate_ports() {
+    SSH_PORT=$(shuf -i 40000-45000 -n 1)
+    PROXY_PORT=$(shuf -i 45001-50000 -n 1)
+    echo "SSH_PORT=$SSH_PORT" > "$PORTS_FILE"
+    echo "PROXY_PORT=$PROXY_PORT" >> "$PORTS_FILE"
+}
+
+load_ports() {
+    if [[ ! -f "$PORTS_FILE" ]]; then
+        generate_ports
+    fi
+    # shellcheck disable=SC1090
+    source "$PORTS_FILE"
+}
+
+load_ports
+
+export ANSIBLE_LOCALHOST_WARNING=False
+export ANSIBLE_INTERPRETER_WARNINGS=False
+
+command="$1"
+case "$command" in
+    ""|"-h"|"--help")
+        help_cmd
+        ;;
+    *)
+        shift
+        valid_command=0
+        for cmd in "${COMMANDS[@]}"; do
+            if [[ "$command" == "$cmd" ]]; then
+                valid_command=1
+                break
+            fi
+        done
+
+        if ((valid_command)); then
+            if [ "$command" != clobber ]; then
+                check_dependencies
+            fi
+            "${command}_cmd" "$@"
+        else
+            echo "Unknown command: $command"
+            help_cmd
+            exit 1
+        fi
+        ;;
+esac

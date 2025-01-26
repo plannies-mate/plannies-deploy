@@ -1,0 +1,9 @@
+#!/bin/bash
+
+rm -rf .venv tmp/* log/*
+find . -name "*.retry" -delete
+find . -name "*.log" -delete
+find . -name "*.tmp" -delete
+find . -name "*.pyc" -delete
+find . -name "__pycache__" -type d -exec rm -rf {} +
+echo "Removed virtualenv and cleaned temporary files"

@@ -1,3 +1,25 @@
+# My ports
+/.ports
+
+# Example files
+!/.envrc.example
+
+# Dev tools
+/.aider*
+/.idea
+/.vscode
+
+# python env
+/venv
+.venv
+
+# Temp and log
+
+!/tmp/.keep
+/log
+!/log/.keep
+
+# GitHub suggested ignores
 *.gem
 *.rbc
 /.config
@@ -10,8 +32,8 @@
 /test/version_tmp/
 /tmp/
 
-# Used by dotenv library to load environment variables.
-# .env
+# Used by direnv and dotenv library to load environment variables.
+.env*
 
 # Ignore Byebug command history file.
 .byebug_history

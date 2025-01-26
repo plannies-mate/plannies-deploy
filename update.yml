@@ -1,0 +1,51 @@
+---
+- name: Wait for SSH port
+  hosts: tag_proxies
+  gather_facts: false
+  tasks:
+    - name: Wait for new SSH port
+      delegate_to: localhost
+      wait_for:
+        delay: 1
+        port: "{{ ssh_port }}"
+        timeout: 180
+        state: started
+        host: "{{ ansible_host }}"
+
+- name: Configure Proxy Server
+  hosts: tag_proxies
+  become: true
+  #vars:
+  #  ansible_port: "{{ ssh_port }}"
+  tasks:
+    - name: Install Squid
+      apt:
+        name: squid
+        update_cache: yes
+
+    - name: Configure Squid
+      template:
+        src: templates/squid.conf.j2
+        dest: /etc/squid/squid.conf
+
+    - name: Install apache2-utils for htpasswd
+      apt:
+        name: apache2-utils
+        state: present
+
+    - name: Create auth file
+      shell: |
+        htpasswd -bc /etc/squid/passwd morph '{{ proxy_password }}'
+        chown proxy:proxy /etc/squid/passwd
+        chmod 640 /etc/squid/passwd
+
+    - name: restart squid
+      service:
+        name: squid
+        state: restarted
+
+    - name: Wait for new proxy port
+      wait_for:
+        port: "{{ proxy_port }}"
+        timeout: 180
+        state: started
