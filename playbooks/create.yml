@@ -1,20 +1,18 @@
-# create.yml
 ---
-- name: Create Australian Proxy
+- name: Create Proxy Instance
   hosts: localhost
   gather_facts: false
   vars_files:
-    - ../vars/localhost.yml
     - ../group_vars/all
   tasks:
     - name: Create Linode instance
       linode.cloud.instance:
         api_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
         label: "{{ instance_name }}"
-        tags: ["proxies"]
+        tags: ["proxies", "needs_ssh_config"]
         type: "{{ linode_type }}"
         region: "{{ region }}"
-        image: "linode/ubuntu22.04"
+        image: "{{ linode_image }}"
         root_pass: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
         authorized_keys:
           - "{{ lookup('file', '~/.ssh/id_ed25519.pub', errors='ignore') or lookup('file', '~/.ssh/id_rsa.pub') }}"
@@ -31,6 +29,7 @@
         groups: tag_proxies
         ansible_host: "{{ proxy_ip }}"
         ansible_user: root
+        ansible_port: 22
         ansible_ssh_common_args: '-o StrictHostKeyChecking=accept-new'
 
     - name: Update DNS record
@@ -43,19 +42,27 @@
         ttl_sec: 300
         state: present
 
+    - name: ReAdd host to inventory
+      add_host:
+        name: "{{ instance_name }}"
+        groups: tag_proxies
+        ansible_host: "{{ proxy_ip }}"
+        ansible_user: root
+        ansible_port: "{{ ssh_port }}"
+        ansible_ssh_common_args: '-o StrictHostKeyChecking=accept-new'
+
     - name: Wait for SSH
       wait_for:
         host: "{{ proxy_ip }}"
         port: 22
-        delay: 10
         timeout: 300
         search_regex: OpenSSH
 
-- name: Configure SSH server
-  hosts: "{{ instance_name }}"
+- name: Configure SSH Server
+  hosts: tag_needs_ssh_config
   become: true
   tasks:
-    - name: Configure SSH on custom port
+    - name: Configure SSH port
       lineinfile:
         path: /etc/ssh/sshd_config
         regexp: '^#?Port '
@@ -63,33 +70,31 @@
         validate: '/usr/sbin/sshd -t -f %s'
       notify: restart ssh
 
-    - name: Wait for custom SSH port
-      wait_for:
-        port: "{{ ssh_port }}"
-        state: started
-        timeout: 30
+    - name: Remove needs_ssh_config tag
+      delegate_to: localhost
+      linode.cloud.instance:
+        api_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
+        label: "{{ instance_name }}"
+        tags: ["proxies"]
+        state: present
 
+  handlers:
     - name: restart ssh
       service:
         name: ssh
         state: restarted
 
-- name: Configure proxy server
-  hosts: "{{ instance_name }}"
+- name: Configure Proxy Server
+  hosts: tag_proxies
   become: true
+  vars:
+    ansible_port: "{{ ssh_port }}"
   tasks:
-    - name: Create local user
-      user:
-        name: "{{ lookup('env', 'USER') }}"
-        shell: /bin/bash
-        groups: sudo
-        append: yes
-
-    - name: Copy local user SSH key
-      ansible.posix.authorized_key:
-        user: "{{ lookup('env', 'USER') }}"
-        key: "{{ lookup('file', '~/.ssh/id_ed25519.pub', errors='ignore') or lookup('file', '~/.ssh/id_rsa.pub') }}"
-        state: present
+    - name: Wait for new SSH port
+      wait_for:
+        port: "{{ ssh_port }}"
+        timeout: 30
+        state: started
 
     - name: Install Squid
       apt:

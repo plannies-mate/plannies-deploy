@@ -1,4 +1,4 @@
-# vars/all.yml
+# group_vars/all
 ---
 proxy_password: "{{ lookup('env', 'PROXY_PASSWORD') | default('changeme', true) }}"
 proxy_domain: "{{ lookup('env', 'PROXY_DOMAIN') }}"
