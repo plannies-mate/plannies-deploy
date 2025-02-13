@@ -22,7 +22,7 @@ IMPLEMENTATION
 1. Instance Creation (create.yml)
 
 - Creates Linode instance with random root password
-- Adds SSH key from ~/.ssh/id_ed25519.pub or id_rsa.pub
+- Adds SSH key from `~/.ssh/id_ed25519.pub` or `id_rsa.pub`
 - Configures custom SSH port
 - Sets up Squid proxy with auth
 - Adds DNS record: plannies-mate.<LINODE_DOMAIN>

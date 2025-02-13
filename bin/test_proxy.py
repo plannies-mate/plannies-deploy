@@ -19,10 +19,9 @@ def get_linode_domain():
     return domain
 
 def get_proxy_password():
-    password = os.getenv('PROXY_PASSWORD')
-    if not password:
-        print("Error: PROXY_PASSWORD environment variable not set")
-        sys.exit(1)
+    with open('.ports') as f:
+        content = f.read()
+        password = re.search(r'PROXY_PASSWORD=(\S+)', content).group(1)
     return password
 
 def test_proxy():

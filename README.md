@@ -33,7 +33,7 @@ Uses direnv to set environment variables.
 
 ```bash
 export LINODE_DOMAIN=domain.on.linode
-export LINODE_API_TOKEN=value
+export LINODE_API_TOKEN=value.from.creating.personal.token
 export GITHUB_CLIENT_ID="your_client_id"
 export GITHUB_CLIENT_SECRET="your_client_secret"
 ```
@@ -57,6 +57,8 @@ Create web / proxy server
 ```bash
 bin/provision create
 ```
+
+This will take about 4 - 5 minutes.
 
 ## Destroy proxy box
 

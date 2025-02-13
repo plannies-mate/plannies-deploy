@@ -48,6 +48,10 @@ check_dependencies() {
         echo "Installing python3..."
         sudo apt install -y python3 python3-venv python3-pip
     fi
+    if ! command -v openssl >/dev/null 2>&1; then
+        echo "Installing openssl..."
+        sudo apt install -y openssl
+    fi
 
     setup_venv
 
@@ -70,8 +74,11 @@ PORTS_FILE=".ports"
 generate_ports() {
     SSH_PORT=$(shuf -i 40000-45000 -n 1)
     PROXY_PORT=$(shuf -i 45001-50000 -n 1)
+    PROXY_PASSWORD=$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '=')
+
     echo "SSH_PORT=$SSH_PORT" > "$PORTS_FILE"
     echo "PROXY_PORT=$PROXY_PORT" >> "$PORTS_FILE"
+    echo "PROXY_PASSWORD=$PROXY_PASSWORD" >> "$PORTS_FILE"
 }
 
 load_ports() {
