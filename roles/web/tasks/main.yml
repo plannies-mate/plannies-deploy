@@ -1,32 +1,49 @@
+# roles/web/tasks/main.yml
 ---
-- name: Import Caddy GPG key
-  apt_key:
-    url: "https://dl.cloudsmith.io/public/caddy/stable/gpg.key"
+- name: Install required packages
+  apt:
+    name:
+      - debian-keyring
+      - debian-archive-keyring
+      - apt-transport-https
+      - curl
+      - gnupg
     state: present
-  become: true
+
+- name: Download Caddy GPG key
+  ansible.builtin.get_url:
+    url: https://dl.cloudsmith.io/public/caddy/stable/gpg.key
+    dest: /tmp/caddy-stable.key
+    mode: '0644'
+
+- name: Install Caddy GPG key
+  ansible.builtin.shell:
+    cmd: cat /tmp/caddy-stable.key | gpg --dearmor --yes --batch > /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/caddy-stable-archive-keyring.gpg
 
 - name: Add Caddy repository
-  apt_repository:
-    repo: "deb https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main"
-    state: present
-    filename: caddy
-  become: true
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/caddy-stable.list
+    content: |
+      deb [signed-by=/usr/share/keyrings/caddy-stable-archive-keyring.gpg] https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main
+    mode: '0644'
 
 - name: Install Caddy
   apt:
     name: caddy
     state: present
     update_cache: yes
-  become: true
 
-- name: Create web root directory
+- name: Create web directories
   file:
-    path: /var/www/html
+    path: "{{ item }}"
     state: directory
     owner: caddy
     group: caddy
     mode: '0755'
-  become: true
+  loop:
+    - /var/www/html
 
 - name: Copy under-construction page
   copy:
@@ -35,7 +52,6 @@
     owner: caddy
     group: caddy
     mode: '0644'
-  become: true
 
 - name: Copy robots.txt
   copy:
@@ -44,14 +60,12 @@
     owner: caddy
     group: caddy
     mode: '0644'
-  become: true
 
 - name: Configure Caddy
   template:
     src: Caddyfile.j2
     dest: /etc/caddy/Caddyfile
     mode: '0644'
-  become: true
   notify: restart caddy
 
 - name: Enable and start Caddy
@@ -59,4 +73,5 @@
     name: caddy
     state: started
     enabled: yes
-  become: true
+    daemon_reload: yes
+    
