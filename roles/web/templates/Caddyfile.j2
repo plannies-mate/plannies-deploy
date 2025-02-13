@@ -1,38 +1,92 @@
 {
     # Global options
     admin off
+    debug
     order authenticate before respond
     order authorize before basicauth
+
+    log {
+        output file /var/log/caddy/access.log {
+            roll_size 10mb
+            roll_keep 10
+            roll_keep_for 168h  # 7 days
+        }
+        format console
+        level INFO
+    }
 }
 
 {{ instance_name }} {
     # Base config
     encode gzip
-    header -Server
+    
+    # Security headers
+    header {
+        # Enable HSTS
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        # Prevent clickjacking
+        X-Frame-Options "SAMEORIGIN"
+        # XSS protection
+        X-Content-Type-Options "nosniff"
+        X-XSS-Protection "1; mode=block"
+        # Referrer policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # Remove server header
+        -Server
+        # Content Security Policy
+        Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://github.com https://*.githubusercontent.com; img-src 'self' data: https:; frame-ancestors 'none'"
+        # Permissions policy
+        Permissions-Policy "geolocation=(), midi=(), sync-xhr=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), fullscreen=(self), payment=()"
+    }
+
+    # Rate limiting for API and auth endpoints
+    @limitAuth {
+        path /oauth2/* /authorities/* /repos/*
+    }
+    handle @limitAuth {
+        ### FIXME Later!
+        ## rate_limit {
+        ##     zone oauth_zone
+        ##     rate 10r/m  # 10 requests per minute per IP
+        ## }
+    }
+
+    # Global rate limit
+    ## rate_limit {
+    ##     zone global
+    ##     rate 60r/m  # 60 requests per minute per IP
+    ## }
 
     # Security configuration
     security {
-        oauth identity provider github "{{ github_client_id }}" "{{ github_client_secret }}"
-        
+        oauth identity provider github {
+            realm github
+            driver github
+            client_id "{{ github_client_id }}"
+            client_secret "{{ github_client_secret }}"
+            scopes openid profile email
+        }
+
         authentication portal myportal {
+            enable identity provider github
             crypto default token lifetime 3600
             crypto key sign-verify "{{ jwt_shared_key }}"
             cookie domain {{ linode_domain }}
-            enable identity provider github
+            
             ui {
                 links {
                     "My Identity" "/whoami" icon "las la-user"
                 }
             }
-            
+
             transform user {
                 match realm github
-                match org plannies-mate
+                match org ianheggie-oaf
                 action add role authp/user
             }
         }
 
-        authorization policy mypolicy {
+        authorization policy restricted {
             set auth url https://{{ instance_name }}/oauth2/github
             crypto key verify "{{ jwt_shared_key }}"
             allow roles authp/user
@@ -43,14 +97,14 @@
 
     # Protected paths
     handle /authorities/* {
-        authorize with mypolicy
+        authorize with restricted
         root * /var/www/html
         try_files {path} {path}/index.html /under-construction.html
         file_server
     }
 
     handle /repos/* {
-        authorize with mypolicy
+        authorize with restricted
         root * /var/www/html
         try_files {path} {path}/index.html /under-construction.html
         file_server
