@@ -1,7 +1,13 @@
+# roles/web/tasks/main.yml
 ---
-- name: Import Caddy GPG key
-  apt_key:
-    url: "https://dl.cloudsmith.io/public/caddy/stable/gpg.key"
+- name: Install required packages
+  apt:
+    name:
+      - debian-keyring
+      - debian-archive-keyring
+      - apt-transport-https
+      - curl
+      - gnupg
     state: present
 
 - name: Add Caddy repository
@@ -16,13 +22,15 @@
     state: present
     update_cache: yes
 
-- name: Create web root directory
+- name: Create web directories
   file:
-    path: /var/www/html
+    path: "{{ item }}"
     state: directory
     owner: caddy
     group: caddy
     mode: '0755'
+  loop:
+    - /var/www/html
 
 - name: Copy under-construction page
   copy:
@@ -52,4 +60,5 @@
     name: caddy
     state: started
     enabled: yes
-
+    daemon_reload: yes
+    

@@ -2,7 +2,7 @@
 - name: Create Server Instance Playbook
   hosts: localhost
   gather_facts: false
-  #vars_files:
+  vars_files:
   #  - host_vars/localhost
     - group_vars/all
   tasks:
