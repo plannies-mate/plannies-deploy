@@ -49,18 +49,23 @@ def test_proxy():
 
     # Add web server tests
     web_tests = [
-        ("HTTP Redirect", f"http://{proxy_host}/", lambda r: r.status_code == 301 and r.headers['Location'].startswith('https://')),
+        ("HTTP Redirect", f"http://{proxy_host}/", lambda r: r.status_code in [301, 308] and r.headers['Location'].startswith('https://')),
         ("HTTPS Working", f"https://{proxy_host}/", lambda r: r.status_code == 200),
         ("Robots.txt", f"https://{proxy_host}/robots.txt", lambda r: r.status_code == 200 and "Disallow: /" in r.text)
     ]
 
     for test_name, url, validator in web_tests:
         try:
-            r = requests.get(url, verify=False, timeout=5)
+            print(f"  Testing {test_name} with a GET request of: {url}")
+            r = requests.get(url, verify=True, timeout=5, allow_redirects=False)
             success = validator(r)
+            if not success:
+                print(f"  Status: {r.status_code}")
+                print(f"  Headers: {r.headers}")
+                print(f"  Body text: {r.text}")
             test_results.append(f"Web {test_name}: {'PASS' if success else 'FAIL'}")
         except Exception as e:
-            test_results.append(f"Web {test_name}: FAIL - {str(e)}")
+            test_results.append(f"Web {test_name}: FAIL - Error {str(e)}")
 
     for test_name, username, password in auth_tests:
         try:
