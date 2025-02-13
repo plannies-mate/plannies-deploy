@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 cd "$(dirname "$0")/.."
 
-if [ $# -lt 1 ]; then
-    echo "Usage: $(basename $0) [ssh-options]"
-    exit 1
-fi
+#if [ $# -lt 1 ]; then
+#    echo "Usage: $(basename $0) [ssh-options]"
+#    exit 1
+#fi
 
 if [ -z "$LINODE_DOMAIN" ]; then
     echo "Error: LINODE_DOMAIN environment variable not set"

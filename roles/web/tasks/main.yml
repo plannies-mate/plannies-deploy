@@ -1,0 +1,62 @@
+---
+- name: Import Caddy GPG key
+  apt_key:
+    url: "https://dl.cloudsmith.io/public/caddy/stable/gpg.key"
+    state: present
+  become: true
+
+- name: Add Caddy repository
+  apt_repository:
+    repo: "deb https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main"
+    state: present
+    filename: caddy
+  become: true
+
+- name: Install Caddy
+  apt:
+    name: caddy
+    state: present
+    update_cache: yes
+  become: true
+
+- name: Create web root directory
+  file:
+    path: /var/www/html
+    state: directory
+    owner: caddy
+    group: caddy
+    mode: '0755'
+  become: true
+
+- name: Copy under-construction page
+  copy:
+    src: under-construction.html
+    dest: /var/www/html/under-construction.html
+    owner: caddy
+    group: caddy
+    mode: '0644'
+  become: true
+
+- name: Copy robots.txt
+  copy:
+    src: robots.txt
+    dest: /var/www/html/robots.txt
+    owner: caddy
+    group: caddy
+    mode: '0644'
+  become: true
+
+- name: Configure Caddy
+  template:
+    src: Caddyfile.j2
+    dest: /etc/caddy/Caddyfile
+    mode: '0644'
+  become: true
+  notify: restart caddy
+
+- name: Enable and start Caddy
+  systemd:
+    name: caddy
+    state: started
+    enabled: yes
+  become: true

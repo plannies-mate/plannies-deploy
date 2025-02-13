@@ -8,6 +8,8 @@
   loop:
     - "{{ ssh_port }}"
     - "{{ proxy_port }}"
+    - 80
+    - 443
 
 - name: FIREWALL | Enable UFW
   tags: 'firewall'

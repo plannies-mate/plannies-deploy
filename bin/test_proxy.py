@@ -47,6 +47,21 @@ def test_proxy():
         ("Wrong Username", "wronguser", proxy_pass),
     ]
 
+    # Add web server tests
+    web_tests = [
+        ("HTTP Redirect", f"http://{proxy_host}/", lambda r: r.status_code == 301 and r.headers['Location'].startswith('https://')),
+        ("HTTPS Working", f"https://{proxy_host}/", lambda r: r.status_code == 200),
+        ("Robots.txt", f"https://{proxy_host}/robots.txt", lambda r: r.status_code == 200 and "Disallow: /" in r.text)
+    ]
+
+    for test_name, url, validator in web_tests:
+        try:
+            r = requests.get(url, verify=False, timeout=5)
+            success = validator(r)
+            test_results.append(f"Web {test_name}: {'PASS' if success else 'FAIL'}")
+        except Exception as e:
+            test_results.append(f"Web {test_name}: FAIL - {str(e)}")
+
     for test_name, username, password in auth_tests:
         try:
             auth_url = f"http://{username}:{password}@{proxy_host}:{proxy_port}" if username else f"http://{proxy_host}:{proxy_port}"

@@ -6,6 +6,23 @@
   poll: 0
   become: true
 
+- name: REBOOT | Wait for web port
+  tags: 'reboot'
+  delegate_to: localhost
+  become: false
+  wait_for:
+    delay: 1
+    port: 80
+    timeout: 180
+    state: started
+    host: "{{ ansible_host }}"
+  register: wait_result
+
+- name: REBOOT | Show wait duration
+  tags: 'reboot'
+  debug:
+    msg: "Waited {{ wait_result.elapsed }} seconds for web port 80"
+
 - name: REBOOT | Wait for new SSH port
   tags: 'reboot'
   delegate_to: localhost

@@ -1,0 +1,17 @@
+{
+    # Global options
+    admin off
+}
+
+{{ instance_name }} {
+    # Force HTTPS
+    encode gzip
+    header -Server
+
+    # Handle static files with global fallback
+    handle /* {
+        root * /var/www/html
+        try_files {path} {path}/index.html /under-construction.html
+        file_server
+    }
+}
