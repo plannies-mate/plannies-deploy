@@ -3,10 +3,10 @@
 source lib/common.sh
 
 ensure_linode_token
-ensure_proxy_domain
+ensure_linode_domain
 load_ports
 
-h="plannies-mate.$PROXY_DOMAIN"
+h="plannies-mate.$LINODE_DOMAIN"
 echo -e "\n=== $h ==="
 
 if host "$h" >/dev/null 2>&1; then

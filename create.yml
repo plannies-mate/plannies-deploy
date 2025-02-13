@@ -22,7 +22,7 @@
     - name: Update DNS record
       linode.cloud.domain_record:
         api_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
-        domain: "{{ proxy_domain }}"
+        domain: "{{ linode_domain }}"
         type: "A"
         name: "{{ instance_name }}"
         target: "{{ linode.instance.ipv4[0] }}"

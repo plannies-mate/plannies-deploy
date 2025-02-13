@@ -11,10 +11,10 @@ def load_ports():
         proxy_port = re.search(r'PROXY_PORT=(\d+)', content).group(1)
     return proxy_port
 
-def get_proxy_domain():
-    domain = os.getenv('PROXY_DOMAIN')
+def get_linode_domain():
+    domain = os.getenv('LINODE_DOMAIN')
     if not domain:
-        print("Error: PROXY_DOMAIN environment variable not set")
+        print("Error: LINODE_DOMAIN environment variable not set")
         sys.exit(1)
     return domain
 
@@ -26,8 +26,8 @@ def get_proxy_password():
     return password
 
 def test_proxy():
-    proxy_domain = get_proxy_domain()
-    proxy_host = f"plannies-mate.{proxy_domain}"
+    linode_domain = get_linode_domain()
+    proxy_host = f"plannies-mate.{linode_domain}"
     proxy_port = load_ports()
     proxy_pass = get_proxy_password()
 

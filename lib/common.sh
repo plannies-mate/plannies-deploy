@@ -12,9 +12,9 @@ ensure_linode_token() {
     fi
 }
 
-ensure_proxy_domain() {
-    if [ -z "$PROXY_DOMAIN" ]; then
-        echo "Error: PROXY_DOMAIN environment variable not set"
+ensure_linode_domain() {
+    if [ -z "$LINODE_DOMAIN" ]; then
+        echo "Error: LINODE_DOMAIN environment variable not set"
         exit 1
     fi
 }

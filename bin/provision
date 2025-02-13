@@ -61,7 +61,7 @@ run_playbook() {
     playbook="$1"
     shift
     ensure_linode_token
-    ensure_proxy_domain
+    ensure_linode_domain
 
     extra_args=''
     if [ -n "$BOOT" ]; then
@@ -97,7 +97,7 @@ status_cmd() {
 }
 
 log_cmd() {
-    h="plannies-mate.$PROXY_DOMAIN"
+    h="plannies-mate.$LINODE_DOMAIN"
 
     local tail_args="${*:--n $DEFAULT_TAIL_LINES}"
     # shellcheck disable=SC2029

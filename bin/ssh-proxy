@@ -6,13 +6,13 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 
-if [ -z "$PROXY_DOMAIN" ]; then
-    echo "Error: PROXY_DOMAIN environment variable not set"
+if [ -z "$LINODE_DOMAIN" ]; then
+    echo "Error: LINODE_DOMAIN environment variable not set"
     exit 1
 fi
 
 source .ports
-HOST="plannies-mate.$PROXY_DOMAIN"
+HOST="plannies-mate.$LINODE_DOMAIN"
 
 remote_user=handyman
 case "$1" in

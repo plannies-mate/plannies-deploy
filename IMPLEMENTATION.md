@@ -25,7 +25,7 @@ IMPLEMENTATION
 - Adds SSH key from ~/.ssh/id_ed25519.pub or id_rsa.pub
 - Configures custom SSH port
 - Sets up Squid proxy with auth
-- Adds DNS record: plannies-mate.<PROXY_DOMAIN>
+- Adds DNS record: plannies-mate.<LINODE_DOMAIN>
 
 2. Instance Destruction (destroy.yml)
 
@@ -43,7 +43,7 @@ IMPLEMENTATION
 3. Proxy Authentication
     - Test with curl:
       ```bash
-      export proxy="http://morph:${PROXY_PASSWORD}@plannies-mate.${PROXY_DOMAIN}:${PROXY_PORT}"
+      export proxy="http://morph:${PROXY_PASSWORD}@plannies-mate.${LINODE_DOMAIN}:${PROXY_PORT}"
       curl -x $proxy http://example.com
       ```
     - OR test with `bin/test_proxy`

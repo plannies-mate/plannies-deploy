@@ -1,7 +1,7 @@
 # group_vars/all
 ---
 proxy_password: "{{ lookup('env', 'PROXY_PASSWORD') | default('changeme', true) }}"
-proxy_domain: "{{ lookup('env', 'PROXY_DOMAIN') }}"
+linode_domain: "{{ lookup('env', 'LINODE_DOMAIN') }}"
 ssh_port: "{{ lookup('file', playbook_dir + '/.ports') | regex_search('SSH_PORT=(\\d+)','\\1') | first }}"
 proxy_port: "{{ lookup('file', playbook_dir + '/.ports') | regex_search('PROXY_PORT=(\\d+)','\\1') | first }}"
 
