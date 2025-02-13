@@ -1,110 +1,79 @@
-# down_under
-Ansible provisioner to create and destroy Aussie , USA or EU linode proxies.
+PLANNIES SETUP
+==============
 
-The main purpose for existing is to provide a proxy url for
-testing morph.io scrapers you are working on.
+Plannies-Setup is an Ansible playbook to create and destroy the Aussie planners-mate linode VPS with caddy web and squid proxy server.
+
+The proxy is intended for testing morph.io scrapers you are working on.
+The web server is intended to host planners-mate web server, with updates by planners-kit 
 
 For example setting MORPH_AUSTRALIAN_PROXY
-to http://user:passowrd@au-proxy.exmple.com:43210/
+to http://user:passowrd@planners-mate.exmple.com:43210/
 
-## Requirements
+Requirements
+------------
  
 * Linode account with API token
 * Domain with DNS managed by Linode
 * Ubuntu linux box (real or virtual)
  
-## Installing
+Installing
+----------
 
 ```bash
-git clone https://github.com/ianheggie/down_under.git
+git clone https://github.com/planners-mate/planners-setup.git
 sudo apt-get install direnv python3 python3-venv python3-pip
 ```
 
-## Configuration
+Configuration
+-------------
 
-1. copy .envrc.example to .envrc 
-2. set
+Uses direnv to set environment variables.
 
-  - LINODE_API_TOKEN: Linode API token access
-  - PROXY_PASSWORD: Random Squid auth password
-  - PROXY_DOMAIN: A domain for proxy DNS that you 
-    have set the name servers so linode hosts the domain
-    - Note, linode will only serve the domain when you have
-      one or more VPS instances (AKA "linodes")
+1. Create a `.envrc` file with
 
-## Create proxy box
+```bash
+export LINODE_DOMAIN=domain.on.linode
+export LINODE_API_TOKEN=value
+export GITHUB_CLIENT_ID="your_client_id"
+export GITHUB_CLIENT_SECRET="your_client_secret"
+```
+* The Linode API token access required: must be set to allow write access for 
+  * Read for everything
+  * Read/Write for Domains and Linodes
+  * Can disable access for VPS
+  * Note, linode will only serve the domain when you have one or more VPS instances (AKA "linodes")
+* The `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` from your Organisations - Github Oauth v2 App
+  * This is used to authenticate who has access
+* Note - this warning will go away once your linode IVPS) is deployed
+  * Your DNS zones are not being served.
+  * Your domains will not be served by Linode’s nameservers unless you have at least one active Linode on your account
+
+Create web / proxy server
+-------------------------
+
 **You are responsible for the costs incurred!**
 **This project creates a 1GB Nanobox VPS system!**
 
 ```bash
-bin/provision create au # or usa or eu
+bin/provision create
 ```
 
 ## Destroy proxy box
 
 ```bash
-bin/provision destroy au # or usa or eu
+bin/provision destroy
 ```
 
-## Technical details
+## Other commands
 
-### Port Management 
-
-- Stored in .ports file:
-- SSH_PORT: Random 40000-45000
-- PROXY_PORT: Random 45001-50000
-- Generated on first run
-- Used by Ansible via group_vars/all
-
-### Inventory Structure
-
-- Dynamic: linodes.linode.yml (tag: proxies)
-- Static: localhost.yml for local execution
-- Host groups: proxies, localhost
-
-## Key Workflows
-
-1. Instance Creation (create.yml)
-   ```yaml
-   Flow:
-   - Create Linode instance with random root password
-   - Add SSH key from ~/.ssh/id_ed25519.pub or id_rsa.pub
-   - Configure custom SSH port
-   - Setup Squid proxy with auth
-   - Add DNS record: <region>-proxy.<PROXY_DOMAIN>
-   ```
-
-2. Instance Destruction (destroy.yml)
-   ```yaml
-   Flow:
-   - Remove Linode instance
-   - Clean up DNS record
-   ```
-### Other commands
-
-* bin/provision - provides a list of commands and what they do
-* bin/test_proxy - tests the proxy behaves as expected, 
+* `bin/provision` - provides a list of commands and what they do
+* `bin/test_proxy` - tests the proxy behaves as expected, 
   runs automatically after create
-* bin/host-status - runs various status commands on the proxy host
-* bin/ssh-proxy - ssh to handyman user on proxy host
+* `bin/host-status` - runs various status commands on the proxy host
+* `bin/ssh-proxy` - ssh to handyman user on proxy host
   with sudo perms
-
-## Testing Plan
-
-2. Port Transition
-    - destroy proxy host 
-    - Delete .ports and regenerate
-    - Verify SSH and proxy ports use new values
-    - Check connectivity on new ports
-
-3. Proxy Authentication
-    - Test with curl:
-      ```bash
-      export proxy="http://morph:${PROXY_PASSWORD}@au-proxy.${PROXY_DOMAIN}:${PROXY_PORT}"
-      curl -x $proxy http://example.com
-      ```
-    - OR test with bin/test_proxy
 
 # Links
 
 * [Linode ansible guide](https://www.linode.com/docs/guides/deploy-linodes-using-linode-ansible-collection/)
+

@@ -25,14 +25,9 @@ def get_proxy_password():
         sys.exit(1)
     return password
 
-def test_proxy(region):
-    valid_regions = ['au', 'usa', 'eu']
-    if region not in valid_regions:
-        print(f"Error: Region must be one of: {', '.join(valid_regions)}")
-        sys.exit(1)
-
+def test_proxy():
     proxy_domain = get_proxy_domain()
-    proxy_host = f"{region}-proxy.{proxy_domain}"
+    proxy_host = f"plannies-mate.{proxy_domain}"
     proxy_port = load_ports()
     proxy_pass = get_proxy_password()
 
@@ -44,7 +39,7 @@ def test_proxy(region):
 
     print(f"Testing proxy: {proxy_host}:{proxy_port}")
 
-    results = []
+    test_results = []
 
     # First test auth failures
     auth_tests = [
@@ -61,16 +56,16 @@ def test_proxy(region):
             got_error_page = 'id=ERR_CACHE_ACCESS_DENIED' in r.text
 
             if got_407 and got_error_page:
-                results.append(f"Auth {test_name}: PASS - Got 407 and proper error page")
+                test_results.append(f"Auth {test_name}: PASS - Got 407 and proper error page")
             else:
                 if got_407:
-                    results.append(f"Auth {test_name}: FAIL - Got 407 but missing error page")
+                    test_results.append(f"Auth {test_name}: FAIL - Got 407 but missing error page")
                 elif got_error_page:
-                    results.append(f"Auth {test_name}: FAIL - Got error page but status was {r.status_code}")
+                    test_results.append(f"Auth {test_name}: FAIL - Got error page but status was {r.status_code}")
                 else:
-                    results.append(f"Auth {test_name}: FAIL - Got status {r.status_code} and no error page")
+                    test_results.append(f"Auth {test_name}: FAIL - Got status {r.status_code} and no error page")
         except Exception as e:
-            results.append(f"Auth {test_name}: FAIL - Unexpected error: {str(e)}")
+            test_results.append(f"Auth {test_name}: FAIL - Unexpected error: {str(e)}")
 
     tests = [
         ("HTTP Basic", "http://httpbin.org/get"),
@@ -87,25 +82,24 @@ def test_proxy(region):
             duration = time.time() - start
 
             if test_name == "IP Masking":
-                results.append(f"{test_name}: PASS - Masked IP: {r.json().get('ip')}")
+                test_results.append(f"{test_name}: PASS - Masked IP: {r.json().get('ip')}")
             elif test_name == "Headers":
                 proxy_headers = [h for h in r.json()['headers'] if 'proxy' in h.lower()]
-                results.append(f"{test_name}: {'FAIL' if proxy_headers else 'PASS'} - No proxy headers leaked")
+                test_results.append(f"{test_name}: {'FAIL' if proxy_headers else 'PASS'} - No proxy headers leaked")
             else:
-                results.append(f"{test_name}: PASS ({duration:.2f}s)")
+                test_results.append(f"{test_name}: PASS ({duration:.2f}s)")
 
         except Exception as e:
-            results.append(f"{test_name}: FAIL - {str(e)}")
+            test_results.append(f"{test_name}: FAIL - {str(e)}")
 
-    return results
+    return test_results
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: test_proxy.py <region>")
-        print("Regions: au, usa, eu")
+    if len(sys.argv) != 1:
+        print("Usage: test_proxy.py")
         sys.exit(1)
 
-    results = test_proxy(sys.argv[1])
+    results = test_proxy()
     failed = 0
     for result in results:
         print(result)

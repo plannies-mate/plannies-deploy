@@ -4,7 +4,6 @@ source lib/common.sh
 
 COMMANDS=()
 declare -A COMMANDS_DESC
-declare -A REGION_MAP
 
 # Commands setup
 COMMANDS+=("create")
@@ -27,11 +26,6 @@ COMMANDS_DESC["links"]="Show useful Linode API reference links"
 COMMANDS_DESC["log"]="Show logs for instance"
 COMMANDS_DESC["status"]="Show status of instances"
 
-# Region mappings
-REGION_MAP["au"]="ap-southeast"
-REGION_MAP["usa"]="us-west"
-REGION_MAP["eu"]="eu-west"
-
 DEFAULT_TAIL_LINES=200
 
 help_cmd() {
@@ -43,61 +37,46 @@ help_cmd() {
 }
 
 create_cmd() {
-    region="$1"
-    shift
-    run_playbook "$region" create "$@" &&
+    run_playbook create "$@" &&
       echo "Sleeping 30s ..." &&
       sleep 30 &&
-      obscure_cmd "$region" "$@"
+      obscure_cmd "$@"
 }
 
 obscure_cmd() {
-    region="$1"
-    shift
     export BOOT=1
-    run_playbook "$region" obscure "$@" &&
-      update_cmd "$region" "$@"
+    run_playbook obscure "$@" &&
+      update_cmd "$@"
 }
 
 update_cmd() {
-    region="$1"
-    shift
-    run_playbook "$region" update "$@" &&
+    run_playbook update "$@" &&
       echo "Sleeping 10 seconds ..." &&
       sleep 10 &&
-      status_cmd "$region" &&
-      bin/test_proxy "$region"
+      status_cmd &&
+      bin/test_proxy 
 }
 
 run_playbook() {
-    region="$1"
-    playbook="$2"
-    shift 2
-    verify_region "$region" "$playbook"
+    playbook="$1"
+    shift
     ensure_linode_token
     ensure_proxy_domain
 
-    instance_name="${region}-proxy"
-    linode_region=${REGION_MAP[$region]}
     extra_args=''
     if [ -n "$BOOT" ]; then
         extra_args='-e ansible_ssh_user=root -e ansible_ssh_port=22'
     fi
 
-    echo "Running: ansible-playbook '$playbook.yml' -e 'instance_name=$instance_name' -e 'region=$linode_region' $extra_args $*"
+    echo "Running: ansible-playbook '$playbook.yml'  $extra_args $*"
     # shellcheck disable=SC2086
-    time ansible-playbook "$playbook.yml" -e "instance_name=$instance_name" -e "region=$linode_region" $extra_args "$@"
+    time ansible-playbook "$playbook.yml" $extra_args "$@"
 }
 
 destroy_cmd() {
-    region="$1"
-    shift
-    verify_region "$region" destroy
-
-    instance_name="${region}-proxy"
     ensure_linode_token
-    echo "Running: ansible-playbook destroy.yml -e 'instance_name=$instance_name'"
-    time ansible-playbook destroy.yml -e "instance_name=$instance_name" "$@"
+    echo "Running: ansible-playbook destroy.yml"
+    time ansible-playbook destroy.yml "$@"
 }
 
 inventory_cmd() {
@@ -118,9 +97,7 @@ status_cmd() {
 }
 
 log_cmd() {
-    region="$1"
-    verify_region "$region" log
-    h="$region-proxy.$PROXY_DOMAIN"
+    h="plannies-mate.$PROXY_DOMAIN"
 
     local tail_args="${*:--n $DEFAULT_TAIL_LINES}"
     # shellcheck disable=SC2029

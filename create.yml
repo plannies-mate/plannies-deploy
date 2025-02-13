@@ -12,7 +12,6 @@
         label: "{{ instance_name }}"
         tags: ["proxies", "needs_ssh_config"]
         type: "{{ linode_type }}"
-        region: "{{ region }}"
         image: "{{ linode_image }}"
         root_pass: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
         authorized_keys:

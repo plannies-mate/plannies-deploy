@@ -2,19 +2,8 @@
 
 # Source in bin files to gain common constants and functions
 
-REGIONS="au usa eu"
 # shellcheck disable=SC2034
 VENV_DIR=".venv"
-
-verify_region()
-{
-      export REGION="$1"
-      if [ -z "$1" ] || [[ ! "$REGIONS" =~ $REGION ]]; then
-          echo "Error: Specify region: au|usa|eu"
-          echo "Usage: $(basename "$0") $* <region>"
-          exit 1
-      fi
-}
 
 ensure_linode_token() {
     if [ -z "$LINODE_API_TOKEN" ]; then

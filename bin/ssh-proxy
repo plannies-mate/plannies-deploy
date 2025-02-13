@@ -2,16 +2,7 @@
 cd "$(dirname "$0")/.."
 
 if [ $# -lt 1 ]; then
-    echo "Usage: $(basename $0) <region> [ssh-options]"
-    echo "Regions: au, usa, eu"
-    exit 1
-fi
-
-REGION="$1"
-shift
-
-if [[ ! "au usa eu" =~ $REGION ]]; then
-    echo "Error: Region must be one of: au, usa, eu"
+    echo "Usage: $(basename $0) [ssh-options]"
     exit 1
 fi
 
@@ -21,7 +12,7 @@ if [ -z "$PROXY_DOMAIN" ]; then
 fi
 
 source .ports
-HOST="$REGION-proxy.$PROXY_DOMAIN"
+HOST="plannies-mate.$PROXY_DOMAIN"
 
 remote_user=handyman
 case "$1" in

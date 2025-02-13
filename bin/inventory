@@ -1,4 +1,4 @@
-#!/bin/bash
+plannies-matebash
 
 source lib/common.sh
 
@@ -13,12 +13,12 @@ instances=$(curl -s -H "Authorization: Bearer $LINODE_API_TOKEN" \
 if [ -z "$instances" ]; then
     echo "No proxy instances found"
 else
-    printf "%-20s %-15s %-12s %-20s %s\n" "NAME" "IP" "REGION" "CREATED" "TAGS"
-    echo "--------------------------------------------------------------------------------"
-    echo "$instances" | jq -r '.label + " " + (.ipv4[0]|tostring) + " " + .region + " " + .created + " " + (if .tags then (.tags|join(",")) else "-" end)' | \
-    while read -r name ip region created tags; do
-        printf "%-20s %-15s %-12s %-20s %s\n" \
-            "$name" "$ip" "$region" "$(date -d "$created" '+%Y-%m-%d %H:%M')" "$tags"
+    printf "%-20s %-15s %-20s %s\n" "NAME" "IP" "CREATED" "TAGS"
+    echo "------------------------------------------------------------------------"
+    echo "$instances" | jq -r '.label + " " + (.ipv4[0]|tostring) + " " + .created + " " + (if .tags then (.tags|join(",")) else "-" end)' | \
+    while read -r name ip created tags; do
+        printf "%-20s %-15s %-20s %s\n" \
+            "$name" "$ip" "$(date -d "$created" '+%Y-%m-%d %H:%M')" "$tags"
     done
 fi
 
