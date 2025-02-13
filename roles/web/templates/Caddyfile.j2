@@ -12,7 +12,7 @@
 			roll_keep_for 168h
 		}
 		format console
-		level DEBUG  # Increased for debugging
+		level DEBUG
 	}
 
 	# Security configuration
@@ -31,7 +31,7 @@
 			crypto key sign-verify "{{ jwt_shared_key }}"
 			cookie domain {{ instance_name }}
 			cookie insecure off
-			cookie same_site lax  # Changed from strict for OAuth flow
+			cookie samesite lax
 			
 			ui {
 				links {
@@ -51,9 +51,8 @@
 			crypto key verify "{{ jwt_shared_key }}"
 			allow roles authp/user
 			validate bearer header
-			validate origin
 			inject headers with claims
-			deny unauthorized
+			deny unauthorized any
 		}
 	}
 }
@@ -74,9 +73,15 @@
 		Permissions-Policy "geolocation=(), midi=(), sync-xhr=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), fullscreen=(self), payment=()"
 	}
 
+	# Authentication endpoints
+	handle /oauth2/* {
+		authenticate with myportal
+	}
+
 	# Debugging endpoint
 	handle /whoami {
 		authenticate with myportal
+		respond * "Hello {user.email}"
 	}
 
 	# Protected paths
