@@ -1,14 +1,62 @@
 {
     # Global options
     admin off
+    order authenticate before respond
+    order authorize before basicauth
 }
 
 {{ instance_name }} {
-    # Force HTTPS
+    # Base config
     encode gzip
     header -Server
 
-    # Handle static files with global fallback
+    # Security configuration
+    security {
+        oauth identity provider github "{{ github_client_id }}" "{{ github_client_secret }}"
+        
+        authentication portal myportal {
+            crypto default token lifetime 3600
+            crypto key sign-verify "{{ jwt_shared_key }}"
+            cookie domain {{ linode_domain }}
+            enable identity provider github
+            ui {
+                links {
+                    "My Identity" "/whoami" icon "las la-user"
+                }
+            }
+            
+            transform user {
+                match realm github
+                match org plannies-mate
+                action add role authp/user
+            }
+        }
+
+        authorization policy mypolicy {
+            set auth url https://{{ instance_name }}/oauth2/github
+            crypto key verify "{{ jwt_shared_key }}"
+            allow roles authp/user
+            validate bearer header
+            inject headers with claims
+        }
+    }
+
+    # Protected paths
+    handle /authorities/* {
+        authorize with mypolicy
+        root * /var/www/html
+        try_files {path} {path}/index.html /under-construction.html
+        file_server
+    }
+
+    handle /repos/* {
+        authorize with mypolicy
+        root * /var/www/html
+        try_files {path} {path}/index.html /under-construction.html
+        file_server
+    }
+
+    # Public paths
     handle /* {
         root * /var/www/html
         try_files {path} {path}/index.html /under-construction.html
