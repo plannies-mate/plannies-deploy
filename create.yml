@@ -13,6 +13,7 @@
         tags: ["proxies", "needs_ssh_config"]
         type: "{{ linode_type }}"
         image: "{{ linode_image }}"
+        region: "{{ linode_region }}"
         root_pass: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
         authorized_keys:
           - "{{ lookup('file', '~/.ssh/id_ed25519.pub', errors='ignore') or lookup('file', '~/.ssh/id_rsa.pub') }}"

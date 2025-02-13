@@ -38,9 +38,9 @@ export GITHUB_CLIENT_ID="your_client_id"
 export GITHUB_CLIENT_SECRET="your_client_secret"
 ```
 * The Linode API token access required: must be set to allow write access for 
-  * Read for everything
+  * Read Only for Account, Events, Images and IPs
   * Read/Write for Domains and Linodes
-  * Can disable access for VPS
+  * You can leave everything else disabled or read access
   * Note, linode will only serve the domain when you have one or more VPS instances (AKA "linodes")
 * The `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` from your Organisations - Github Oauth v2 App
   * This is used to authenticate who has access

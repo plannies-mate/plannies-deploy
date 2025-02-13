@@ -4,8 +4,8 @@
 - name: Destroy Proxy Instances
   hosts: "{{ instance_name }}"
   gather_facts: false
-  #vars_files:
-  #  - group_vars/all
+  vars_files:
+    - group_vars/all
   tasks:
   - name: Remove DNS record
     linode.cloud.domain_record:
@@ -19,9 +19,9 @@
 
 - name: Destroy Proxy Instances
   hosts: localhost
-  #vars_files:
+  vars_files:
   #  - host_vars/localhost
-  #  - group_vars/all
+    - group_vars/all
   gather_facts: false
   tasks:
     - name: Delete instance

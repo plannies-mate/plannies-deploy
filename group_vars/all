@@ -2,6 +2,7 @@
 ---
 proxy_password: "{{ lookup('env', 'PROXY_PASSWORD') | default('changeme', true) }}"
 linode_domain: "{{ lookup('env', 'LINODE_DOMAIN') }}"
+instance_name: "plannies-mate.{{ linode_domain }}"
 ssh_port: "{{ lookup('file', playbook_dir + '/.ports') | regex_search('SSH_PORT=(\\d+)','\\1') | first }}"
 proxy_port: "{{ lookup('file', playbook_dir + '/.ports') | regex_search('PROXY_PORT=(\\d+)','\\1') | first }}"
 
@@ -14,3 +15,6 @@ ansible_ssh_port: "{{ ssh_port }}"
 iam_group_all: true
 
 provision_user: handyman
+
+linode_region: "au-mel"
+#linode_region: "ap-southeast"
