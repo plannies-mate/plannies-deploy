@@ -9,10 +9,10 @@
 		output file /var/log/caddy/access.log {
 			roll_size 10mb
 			roll_keep 10
-			roll_keep_for 168h # 7 days
+			roll_keep_for 168h
 		}
 		format console
-		level INFO
+		level DEBUG  # Increased for debugging
 	}
 
 	# Security configuration
@@ -22,15 +22,17 @@
 			driver github
 			client_id "{{ github_client_id }}"
 			client_secret "{{ github_client_secret }}"
-			scopes openid profile email
+			scopes openid profile email read:org
 		}
 
 		authentication portal myportal {
 			enable identity provider github
 			crypto default token lifetime 3600
 			crypto key sign-verify "{{ jwt_shared_key }}"
-			cookie domain {{ linode_domain }}
-
+			cookie domain {{ instance_name }}
+			cookie insecure off
+			cookie same_site lax  # Changed from strict for OAuth flow
+			
 			ui {
 				links {
 					"My Identity" "/whoami" icon "las la-user"
@@ -49,7 +51,9 @@
 			crypto key verify "{{ jwt_shared_key }}"
 			allow roles authp/user
 			validate bearer header
+			validate origin
 			inject headers with claims
+			deny unauthorized
 		}
 	}
 }
@@ -57,47 +61,27 @@
 {{ instance_name }} {
 	# Base config
 	encode gzip
-
+	
 	# Security headers
 	header {
-		# Enable HSTS
 		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-		# Prevent clickjacking
-		X-Frame-Options "SAMEORIGIN"
-		# XSS protection
+		X-Frame-Options "DENY"
 		X-Content-Type-Options "nosniff"
 		X-XSS-Protection "1; mode=block"
-		# Referrer policy
 		Referrer-Policy "strict-origin-when-cross-origin"
-		# Remove server header
 		-Server
-		# Content Security Policy
-		Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://github.com https://*.githubusercontent.com; img-src 'self' data: https:; frame-ancestors 'none'"
-		# Permissions policy
+		Content-Security-Policy "default-src 'self' https://github.com https://*.githubusercontent.com; script-src 'self' 'unsafe-inline' https://github.com; style-src 'self' 'unsafe-inline' https://github.com; img-src 'self' data: https:; frame-ancestors 'none'"
 		Permissions-Policy "geolocation=(), midi=(), sync-xhr=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), fullscreen=(self), payment=()"
 	}
 
-	# Rate limiting for API and auth endpoints
-	@limitAuth {
-		path /oauth2/* /authorities/* /repos/*
+	# Debugging endpoint
+	handle /whoami {
+		authenticate with myportal
 	}
-	handle @limitAuth {
-		### FIXME Later!
-		## rate_limit {
-		##     zone oauth_zone
-		##     rate 10r/m  # 10 requests per minute per IP
-		## }
-	}
-
-	# Global rate limit
-	## rate_limit {
-	##     zone global
-	##     rate 60r/m  # 60 requests per minute per IP
-	## }
-
 
 	# Protected paths
 	handle /authorities/* {
+		authenticate with myportal
 		authorize with restricted
 		root * /var/www/html
 		try_files {path} {path}/index.html /under-construction.html
@@ -105,6 +89,7 @@
 	}
 
 	handle /repos/* {
+		authenticate with myportal
 		authorize with restricted
 		root * /var/www/html
 		try_files {path} {path}/index.html /under-construction.html
@@ -117,5 +102,10 @@
 		try_files {path} {path}/index.html /under-construction.html
 		file_server
 	}
-}
 
+	handle_errors {
+		root * /var/www/html
+		rewrite * /error.html
+		file_server
+	}
+}
