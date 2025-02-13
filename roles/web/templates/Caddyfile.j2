@@ -89,7 +89,7 @@
         authenticate with myportal
         authorize with restricted
         root * /var/www/html
-        try_files {path} {path}.html {path}/index.html /404.html
+        try_files {path} {path}.html {path}/index.html {path}.default.html {path}/default.html /404.html
         file_server
     }
 
@@ -97,14 +97,14 @@
         authenticate with myportal
         authorize with restricted
         root * /var/www/html
-        try_files {path} {path}.html {path}/index.html /404.html
+        try_files {path} {path}.html {path}/index.html {path}.default.html {path}/default.html /404.html
         file_server
     }
 
     # Public paths
     handle /* {
         root * /var/www/html
-        try_files {path} {path}.html {path}/index.html /404.html
+        try_files {path} {path}.html {path}/index.html {path}.default.html {path}/default.html /404.html
         file_server
     }
 
