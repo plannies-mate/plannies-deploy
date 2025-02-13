@@ -79,6 +79,8 @@
   loop:
     - /etc/caddy
     - /var/www/html
+    - /var/www/html/repos
+    - /var/www/html/authorities
     - /var/log/caddy
     - /var/lib/caddy
 
@@ -109,21 +111,30 @@
       WantedBy=multi-user.target
     mode: '0644'
 
-- name: Copy under-construction page
+- name: Copy static pages
   copy:
-    src: under-construction.html
-    dest: /var/www/html/under-construction.html
+    src: "{{ item }}"
+    dest: "/var/www/html/{{ item }}"
     owner: caddy
     group: caddy
     mode: '0644'
-
-- name: Copy robots.txt
-  copy:
-    src: robots.txt
-    dest: /var/www/html/robots.txt
-    owner: caddy
-    group: caddy
-    mode: '0644'
+  loop:
+    - 404.html
+    - android-chrome-192x192.png
+    - android-chrome-512x512.png
+    - apple-touch-icon.png
+    - auth-error.html
+    - auth-error.html.bak
+    - authorities/default.html
+    - default.html
+    - error.html
+    - error.html.bak
+    - favicon-16x16.png
+    - favicon-32x32.png
+    - favicon.ico
+    - repos/default.html
+    - robots.txt
+    - site.webmanifest
 
 - name: Configure Caddy
   template:
