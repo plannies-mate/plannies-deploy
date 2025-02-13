@@ -1,0 +1,24 @@
+---
+- name: USERS | Create handyman user
+  tags: 'users'
+  user:
+    name: "{{ provision_user }}"
+    shell: /bin/bash
+    groups: sudo
+    append: yes
+
+- name: USERS | Set up SSH for handyman
+  tags: 'users'
+  authorized_key:
+    user: "{{ provision_user }}"
+    state: present
+    key: "{{ lookup('file', '~/.ssh/id_ed25519.pub', errors='ignore') or lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+- name: USERS | Allow handyman sudo without password
+  tags: 'users'
+  lineinfile:
+    path: /etc/sudoers.d/handyman
+    line: "handyman ALL=(ALL) NOPASSWD:ALL"
+    create: yes
+    mode: '0440'
+    validate: 'visudo -cf %s'

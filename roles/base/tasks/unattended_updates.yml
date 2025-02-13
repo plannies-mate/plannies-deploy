@@ -1,0 +1,23 @@
+---
+- name: UU | Install unattended-upgrades
+  tags: 'uu'
+  apt:
+    name: unattended-upgrades
+    state: present
+    update_cache: yes
+
+- name: UU | Run unattended-upgrades
+  tags: 'uu'
+  command: "unattended-upgrade || echo Ignored failure"
+
+- name: UU | Configure unattended-upgrades
+  tags: 'uu'
+  command: dpkg-reconfigure -f noninteractive unattended-upgrades
+
+- name: UU | Enable unattended-upgrades
+  tags: 'uu'
+  copy:
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+    dest: /etc/apt/apt.conf.d/20auto-upgrades

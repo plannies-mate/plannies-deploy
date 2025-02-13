@@ -1,0 +1,76 @@
+---
+- name: PROXY | Configure Squid
+  tags: 'proxy'
+  template:
+    src: templates/squid.conf.j2
+    dest: /etc/squid/squid.conf
+
+- name: PROXY | Install apache2-utils for htpasswd
+  tags: 'proxy'
+  apt:
+    name: apache2-utils
+    state: present
+
+- name: PROXY | Create auth file
+  tags: 'proxy'
+  shell: |
+    htpasswd -bc /etc/squid/passwd morph '{{ proxy_password }}'
+    chown proxy:proxy /etc/squid/passwd
+    chmod 640 /etc/squid/passwd
+
+- name: PROXY | Configure fail2ban for squid
+  tags: 'proxy'
+  copy:
+    dest: /etc/fail2ban/jail.d/squid.conf
+    content: |
+      [squid]
+      enabled = true
+      filter = squid
+      logpath = /var/log/squid/access.log
+      maxretry = 3
+      findtime = 600
+      bantime = 3600
+
+- name: PROXY | Configure squid logrotate
+  tags: 'proxy'
+  copy:
+    dest: /etc/logrotate.d/squid
+    content: |
+      /var/log/squid/*.log {
+      daily
+      rotate 7
+      compress
+      delaycompress
+      missingok
+      nocreate
+      sharedscripts
+      postrotate
+      /usr/bin/systemctl reload squid
+      endscript
+      }
+
+- name: PROXY | Create systemd override directory for squid
+  tags: 'proxy'
+  file:
+    path: /etc/systemd/system/squid.service.d
+    state: directory
+
+- name: PROXY | Add Squid memory limits
+  tags: 'proxy'
+  copy:
+    dest: /etc/systemd/system/squid.service.d/override.conf
+    content: |
+      [Service]
+      MemoryHigh=512M
+      MemoryMax=768M
+
+- name: PROXY | Add Squid security config
+  tags: 'proxy'
+  blockinfile:
+    path: /etc/squid/squid.conf
+    block: |
+      request_header_access From deny all
+      request_header_access Via deny all
+      forwarded_for delete
+
+      

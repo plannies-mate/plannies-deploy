@@ -68,6 +68,20 @@ run_playbook() {
         extra_args='-e ansible_ssh_user=root -e ansible_ssh_port=22'
     fi
 
+    case "$TAGS" in
+    ?*)
+        extra_args="$extra_args --tags=facts,$TAGS"
+        #command_arguments="TAGS='$TAGS' $command_arguments"
+        ;;
+    esac
+
+    case "$SKIP_TAGS" in
+    ?*)
+        extra_args="$extra_args --skip-tags=$SKIP_TAGS"
+        #command_arguments="SKIP_TAGS='$SKIP_TAGS' $command_arguments"
+        ;;
+    esac
+
     echo "Running: ansible-playbook '$playbook.yml'  $extra_args $*"
     # shellcheck disable=SC2086
     time ansible-playbook "$playbook.yml" $extra_args "$@"

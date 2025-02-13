@@ -1,0 +1,37 @@
+---
+- name: PACKAGES | Update apt cache
+  tags: 'packages'
+  apt:
+    update_cache: yes
+
+- name: PACKAGES | Install squid and security packages
+  tags: 'packages'
+  apt:
+    name:
+      - fail2ban
+      - ufw
+      - auditd
+      - squid
+      - squidclient
+    state: present
+
+- name: PACKAGES | Load nf_conntrack module
+  tags: 'packages'
+  modprobe:
+    name: nf_conntrack
+    state: present
+  ignore_errors: yes
+
+- name: PACKAGES | Add nf_conntrack to modules
+  tags: 'packages'
+  lineinfile:
+    path: /etc/modules
+    line: nf_conntrack
+    create: yes
+
+- name: PACKAGES | Set conntrack limits
+  tags: 'packages'
+  sysctl:
+    name: net.netfilter.nf_conntrack_max
+    value: '65536'
+    state: present

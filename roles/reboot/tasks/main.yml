@@ -1,0 +1,24 @@
+---
+- name: REBOOT | Trigger reboot
+  tags: 'reboot'
+  shell: 'sleep 1 && reboot -f && sleep 1'
+  async: 1
+  poll: 0
+  become: true
+
+- name: REBOOT | Wait for new SSH port
+  tags: 'reboot'
+  delegate_to: localhost
+  become: false
+  wait_for:
+    delay: 1
+    port: "{{ ssh_port }}"
+    timeout: 180
+    state: started
+    host: "{{ ansible_host }}"
+  register: wait_result
+
+- name: REBOOT | Show wait duration
+  tags: 'reboot'
+  debug:
+    msg: "Waited {{ wait_result.elapsed }} seconds for SSH port {{ ssh_port }}"

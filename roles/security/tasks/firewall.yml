@@ -1,0 +1,16 @@
+---
+- name: FIREWALL | Configure UFW
+  tags: 'firewall'
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop:
+    - "{{ ssh_port }}"
+    - "{{ proxy_port }}"
+
+- name: FIREWALL | Enable UFW
+  tags: 'firewall'
+  ufw:
+    state: enabled
+    policy: deny

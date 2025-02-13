@@ -1,0 +1,36 @@
+---
+- name: SWAP | Disable swap
+  tags: 'swap'
+  command: swapoff /swapfile
+  ignore_errors: true
+
+- name: SWAP | Create swap file
+  tags: 'swap'
+  command: dd if=/dev/zero of=/swapfile bs=1M count=1024
+
+- name: SWAP | Set swap file permissions
+  tags: 'swap'
+  file:
+    path: /swapfile
+    mode: '0600'
+
+- name: SWAP | Make swap
+  tags: 'swap'
+  command: mkswap /swapfile
+
+- name: SWAP | Enable swap
+  tags: 'swap'
+  command: swapon /swapfile
+
+- name: SWAP | Add swap to fstab
+  tags: 'swap'
+  lineinfile:
+    path: /etc/fstab
+    line: '/swapfile none swap sw 0 0'
+
+- name: SWAP | Set swappiness
+  tags: 'swap'
+  sysctl:
+    name: vm.swappiness
+    value: '10'
+    state: present

@@ -1,7 +1,7 @@
 # destroy.yml
 ---
 
-- name: Destroy Proxy Instances
+- name: Destroy Proxy Instance Playbook
   hosts: "{{ instance_name }}"
   gather_facts: false
   vars_files:
