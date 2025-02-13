@@ -74,9 +74,9 @@ PORTS_FILE=".ports"
 generate_ports() {
     SSH_PORT=$(shuf -i 40000-45000 -n 1)
     PROXY_PORT=$(shuf -i 45001-50000 -n 1)
-    PROXY_PASSWORD=$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '=')
+    PROXY_PASSWORD=$(openssl rand -base64 24 | tr '+/' '-_' | tr -d '=')
     # Generate a secure JWT key - 32 bytes base64 encoded
-    JWT_SHARED_KEY=$(openssl rand -base64 32)
+    JWT_SHARED_KEY=$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '=')
 
     echo "SSH_PORT=$SSH_PORT" > "$PORTS_FILE"
     echo "PROXY_PORT=$PROXY_PORT" >> "$PORTS_FILE"

@@ -36,6 +36,7 @@ export LINODE_DOMAIN=domain.on.linode
 export LINODE_API_TOKEN=value.from.creating.personal.token
 export GITHUB_CLIENT_ID="your_client_id"
 export GITHUB_CLIENT_SECRET="your_client_secret"
+export UBUNTU_PRO_TOKEN=value-from-ubuntu.com/pro/dashboard
 ```
 * The Linode API token access required: must be set to allow write access for 
   * Read Only for Account, Events, Images and IPs
@@ -47,6 +48,7 @@ export GITHUB_CLIENT_SECRET="your_client_secret"
 * Note - this warning will go away once your linode IVPS) is deployed
   * Your DNS zones are not being served.
   * Your domains will not be served by Linode’s nameservers unless you have at least one active Linode on your account
+* The `UBUNTU_PRO_TOKEN` is optional - it is free for the first 5 private servers from https://ubuntu.com/pro/dashboard
 
 Create web / proxy server
 -------------------------

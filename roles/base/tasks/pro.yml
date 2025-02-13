@@ -1,0 +1,11 @@
+---
+- name: PRO Attach Ubuntu Pro
+  command: "pro attach '{{ ubuntu_pro_token }}'"
+  register: pro_result
+  changed_when: pro_result.rc == 0
+  failed_when: pro_result.rc != 0 and 'already attached' not in pro_result.stderr
+  when:
+    - ubuntu_pro_token is defined
+    - ubuntu_pro_token | length > 0
+    - ubuntu_pro_token is not none
+  no_log: true  # Hide token from log

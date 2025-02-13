@@ -11,6 +11,7 @@ jwt_shared_key: "{{ lookup('file', playbook_dir + '/.ports') | regex_search('JWT
 github_client_id: "{{ lookup('env', 'GITHUB_CLIENT_ID') }}"
 github_client_secret: "{{ lookup('env', 'GITHUB_CLIENT_SECRET') }}"
 
+ubuntu_pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"
 
 dns_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
 dns_provider: "linode"
