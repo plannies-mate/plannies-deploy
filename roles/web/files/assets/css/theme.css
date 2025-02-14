@@ -1,42 +1,143 @@
-/* roles/web/files/css/theme.css */
+/* Theme colors and decorative elements */
+:root {
+    --primary-color: #00843D; /* Aussie green */
+    --secondary-color: #FFCD00; /* Aussie gold */
+    --text-color: #333333;
+    --background-color: #F5F5F5;
+    --card-background: #FFFFFF;
+    --border-color: #E0E0E0;
+    --error-color: #FF4444;
+    --success-color: #00C851;
+}
+
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    line-height: 1.6;
-    margin: 0;
-    padding: 2rem;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #fdf6e3;
-    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23E4D5B7"/><path d="M50 20c16.6 0 30 13.4 30 30S66.6 80 50 80 20 66.6 20 50s13.4-30 30-30z" fill="%23D4C5A7"/></svg>');
-    background-size: 300px;
-    background-repeat: repeat;
-    background-blend-mode: multiply;
-    color: #433;
-}
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: var(--text-color);
+    background-color: var(--background-color);
+    }
 
-.container {
-    background: rgba(253, 246, 227, 0.95);
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 2rem 3rem;
-    max-width: 600px;
+/* Hero section styling */
+
+.hero {
+    background-color: var(--primary-color);
+    color: white;
+    position: relative;
+    /*overflow: hidden;*/
+    padding: 2rem 0;
     text-align: center;
+    margin-bottom: 1.5rem;
 }
 
-h1 {
-    color: #b5632d;
+.hero::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('https://images.unsplash.com/photo-1523482580672-f109ba8cb9be');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.7;
+    z-index: 0;
+    mix-blend-mode: multiply; /* Adds richness while maintaining readability */
+
+    /*mix-blend-mode: soft-light;  !* Added for better contrast *!*/
+}
+
+.hero .container {
+    position: relative;
+    z-index: 1;
+}
+
+.profile-image {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 1.5rem;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid var(--secondary-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Card styling */
+
+.project-card {
+    background: var(--card-background);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.project-icon {
+    font-size: 2.5rem;
+    color: var(--primary-color);
     margin-bottom: 1rem;
 }
 
-.message {
-    margin: 2rem 0;
-    font-size: 1.1em;
+/* Button styling */
+
+.button {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
 }
 
-.footer {
-    margin-top: 2rem;
-    font-size: 0.9em;
-    color: #666;
+.button:hover {
+    background-color: #006B31;
+}
+
+/* Social links */
+
+.social-link {
+    color: var(--text-color);
+    font-size: 1.5rem;
+    transition: color 0.3s ease;
+}
+
+.social-link:hover {
+    color: var(--primary-color);
+}
+
+/* Drop zone styling */
+
+.drop-zone {
+    border: 3px dashed var(--border-color);
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.drop-zone.dragging {
+    border-color: var(--primary-color);
+    background: rgba(0, 132, 61, 0.05);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.project-card {
+    animation: fadeIn 0.5s ease forwards;
 }
