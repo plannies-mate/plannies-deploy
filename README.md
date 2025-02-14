@@ -1,7 +1,7 @@
-PLANNIES SETUP
+PLANNIES DEPLOY
 ==============
 
-Plannies-Setup is an Ansible playbook to create and destroy the Aussie planners-mate linode VPS with caddy web and squid proxy server.
+Plannies-Deploy is an Ansible playbook to create and destroy the Aussie planners-mate linode VPS with caddy web and squid proxy server.
 
 The proxy is intended for testing morph.io scrapers you are working on.
 The web server is intended to host planners-mate web server, with updates by planners-kit 
@@ -20,7 +20,7 @@ Installing
 ----------
 
 ```bash
-git clone https://github.com/planners-mate/planners-setup.git
+git clone https://github.com/planners-mate/planners-deploy.git
 sudo apt-get install direnv python3 python3-venv python3-pip
 ```
 
