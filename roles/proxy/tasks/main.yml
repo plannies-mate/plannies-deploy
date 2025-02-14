@@ -5,19 +5,6 @@
     src: templates/squid.conf.j2
     dest: /etc/squid/squid.conf
 
-- name: PROXY | Install apache2-utils for htpasswd
-  tags: 'proxy'
-  apt:
-    name: apache2-utils
-    state: present
-
-- name: PROXY | Create auth file
-  tags: 'proxy'
-  shell: |
-    htpasswd -bc /etc/squid/passwd morph '{{ proxy_password }}'
-    chown proxy:proxy /etc/squid/passwd
-    chmod 640 /etc/squid/passwd
-
 - name: PROXY | Configure fail2ban for squid
   tags: 'proxy'
   copy:
