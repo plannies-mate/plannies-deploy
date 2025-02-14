@@ -27,6 +27,14 @@ def extract_title(content):
     return h1.get_text() if h1 else None
 
 
+def determine_section(input_path):
+    """Determine the section name based on the input file path"""
+    path_str = str(input_path).lower()
+    if 'whats_that' in path_str or 'crikey' in path_str:
+        return "Crikey! What's That?"
+    return "Plannies Mate"
+
+
 def main():
     parser = argparse.ArgumentParser(description='Apply theme template to HTML content')
     parser.add_argument('-t', '--template', default='default',
@@ -74,9 +82,25 @@ def main():
         print("Warning: No h1 title found in input file")
         title = ""
 
+    # Load appropriate favicon snippet
+    is_crikey = 'whats_that' in str(input_path).lower() or 'crikey' in str(input_path).lower()
+    favicon_name = 'favicon-crikey.html' if is_crikey else 'favicon-default.html'
+    favicon_path = project_root / 'roles' / 'web' / 'files' / 'templates' / favicon_name
+    try:
+        with open(favicon_path) as f:
+            favicon_content = f.read()
+    except FileNotFoundError:
+        print(f"Warning: Favicon template '{favicon_name}' not found, using empty string")
+        favicon_content = ''
+
+    # Determine section
+    section = determine_section(input_path)
+
     # Apply template
     output_content = template_content.replace('{{TITLE}}', title)
     output_content = output_content.replace('{{CONTENT}}', content)
+    output_content = output_content.replace('{{FAVICON}}', favicon_content)
+    output_content = output_content.replace('{{SECTION}}', section)
 
     # Write output
     os.makedirs(output_dir, exist_ok=True)

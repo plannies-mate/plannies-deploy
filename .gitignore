@@ -34,6 +34,7 @@
 /test/tmp/
 /test/version_tmp/
 /tmp/
+,*
 
 # Used by direnv and dotenv library to load environment variables.
 .env*
