@@ -33,31 +33,6 @@ def main():
     # Create build directory
     build_dir.mkdir(parents=True, exist_ok=True)
 
-    # Copy static assets
-    assets_dir = files_dir / 'assets'
-    build_assets_dir = build_dir / 'assets'
-    if build_assets_dir.exists():
-        shutil.rmtree(build_assets_dir)
-    shutil.copytree(assets_dir, build_assets_dir)
-
-    # Copy favicon.ico - special case since some browsers expect it at root
-    favicon = assets_dir / 'favicon.ico'
-    if favicon.exists():
-        shutil.copy2(favicon, build_dir / 'favicon.ico')
-
-    # Copy CSS
-    css_dir = files_dir / 'css'
-    build_css_dir = build_dir / 'css'
-    if css_dir.exists():
-        if build_css_dir.exists():
-            shutil.rmtree(build_css_dir)
-        shutil.copytree(css_dir, build_css_dir)
-
-    # Copy robots.txt
-    robots = files_dir / 'robots.txt'
-    if robots.exists():
-        shutil.copy2(robots, build_dir / 'robots.txt')
-
     # Process all content files
     for content_file in contents_dir.rglob('*.html'):
         # Determine output path

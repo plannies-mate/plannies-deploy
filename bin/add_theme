@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import argparse
 import os
-import re
 
 try:
     from bs4 import BeautifulSoup
@@ -21,33 +20,11 @@ def find_project_root():
     return None
 
 
-def extract_title(html_content):
+def extract_title(content):
     """Extract title from first h1 tag"""
-    soup = BeautifulSoup(html_content, 'html.parser')
+    soup = BeautifulSoup(content, 'html.parser')
     h1 = soup.find('h1')
     return h1.get_text() if h1 else None
-
-
-def extract_content(html_content):
-    """Extract body content from HTML"""
-    soup = BeautifulSoup(html_content, 'html.parser')
-    body = soup.find('body')
-    if not body:
-        return None
-
-    # Extract the main content div
-    content = body.find('div', class_='container')
-    if not content:
-        return None
-
-    return str(content.decode_contents())
-
-
-def apply_template(template_content, title, content):
-    """Apply title and content to template"""
-    result = template_content.replace('{{TITLE}}', title if title else '')
-    result = result.replace('{{CONTENT}}', content if content else '')
-    return result
 
 
 def main():
@@ -56,7 +33,7 @@ def main():
                         help='Template name (without .html extension)')
     parser.add_argument('-o', '--output-dir',
                         help='Output directory (defaults to tmp/build under project root)')
-    parser.add_argument('input_file', help='Input HTML file path')
+    parser.add_argument('input_file', help='Input HTML content file path')
     args = parser.parse_args()
 
     # Find project root
@@ -83,26 +60,23 @@ def main():
         print(f"Error: Template '{args.template}' not found")
         return 1
 
-    # Load input file
+    # Load input content
     try:
         with open(input_path) as f:
-            input_content = f.read()
+            content = f.read().strip()
     except FileNotFoundError:
         print(f"Error: Input file '{input_path}' not found")
         return 1
 
-    # Extract title and content
-    title = extract_title(input_content)
+    # Extract title from h1
+    title = extract_title(content)
     if not title:
         print("Warning: No h1 title found in input file")
-
-    content = extract_content(input_content)
-    if not content:
-        print("Error: Could not extract content from input file")
-        return 1
+        title = ""
 
     # Apply template
-    output_content = apply_template(template_content, title, content)
+    output_content = template_content.replace('{{TITLE}}', title)
+    output_content = output_content.replace('{{CONTENT}}', content)
 
     # Write output
     os.makedirs(output_dir, exist_ok=True)
