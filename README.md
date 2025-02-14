@@ -1,5 +1,5 @@
 PLANNIES DEPLOY
-==============
+===============
 
 Plannies-Deploy is an Ansible playbook to create and destroy the Aussie planners-mate linode VPS with caddy web and squid proxy server.
 
