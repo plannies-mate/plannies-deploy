@@ -1,146 +1,152 @@
 {
-    # Global options
-    admin off
-    debug
-    order authenticate before respond
-    order authorize before basicauth
+	# Global options
+	admin off
+	debug
+	order authenticate before respond
+	order authorize before basicauth
 
-    log {
-        output file /var/log/caddy/access.log {
-            roll_size 10mb
-            roll_keep 10
-            roll_keep_for 168h
-        }
-        format console
-        level DEBUG
-    }
+	log {
+		output file /var/log/caddy/access.log {
+			roll_size 10mb
+			roll_keep 10
+			roll_keep_for 168h
+		}
+		format console
+		level DEBUG
+	}
 
-    # Security configuration
-    security {
-        oauth identity provider github {
-            realm github
-            driver github
-            client_id "{{ github_client_id }}"
-            client_secret "{{ github_client_secret }}"
-            scopes read:user read:org
-        }
+	# Security configuration
+	security {
+		oauth identity provider github {
+			realm github
+			driver github
+			client_id "{{ github_client_id }}"
+			client_secret "{{ github_client_secret }}"
+			scopes read:user read:org
+		}
 
-        authentication portal myportal {
-            enable identity provider github
-            crypto default token lifetime 3600
-            crypto key sign-verify "{{ jwt_shared_key }}"
-            cookie domain {{ instance_name }}
-            cookie insecure off
-            cookie samesite lax
+		authentication portal myportal {
+			enable identity provider github
+			crypto default token lifetime 3600
+			crypto key sign-verify "{{ jwt_shared_key }}"
+			cookie domain {{ instance_name }}
+			cookie insecure off
+			cookie samesite lax
 
-            ui {
-                links {
-                    "Menu" "/menu" icon "las la-bars"
-                    "My Identity" "/whoami" icon "las la-user"
-                }
-            }
+			ui {
+				links {
+					"Crikey! What's That?" /whats_that icon "las la-question"
+					"Authorities" /authorities icon "las la-city"
+					"Repositories" "/repos" icon "las la-github"
+					"Caddy Version" "/version" icon "las la-code-branch"
+					"My Identity" "/whoami" icon "las la-user"
+				}
+			}
 
+			transform user {
+				match realm github
+				match sub github.com/mlander
+				action add role authp/user
+			}
 
-            transform user {
-                match realm github
-                action add role authp/user with org plannies-mate
-            }
+			transform user {
+				match realm github
+				match sub github.com/ianheggie-aof github.com/ianheggie
+				action add role authp/admin
+				ui link "Admin" /admin icon "las la-admin"
+			}
+		}
 
-            # Set custom pages
-            # FIXME custom pages {
-            #      signin /login
-            #      forbidden /auth-error.html
-            #  }
-        }
-
-        authorization policy restricted {
-            set auth url https://{{ instance_name }}/oauth2/github
-            crypto key verify "{{ jwt_shared_key }}"
-            # FIXME  allow roles authp/user
-            validate bearer header
-            # FIXME validate origin
-            inject headers with claims
-            deny unauthorized any
-        }
-    }
+		authorization policy restricted {
+			set auth url https://{{ instance_name }}/oauth2/github
+			crypto key verify "{{ jwt_shared_key }}"
+			allow roles authp/admin authp/user
+			validate bearer header
+			inject headers with claims
+			#deny unauthorized any
+		}
+	}
 }
 
 # snippets
 
 (authenticated) {
-        authenticate with myportal
+	authenticate with myportal
 }
 
 (protected) {
-        import authenticated
-        authorize with restricted
+	import authenticated
+	authorize with restricted
 }
 
 (serve_files) {
-       try_files {path} {path}.html {path}/index.html {path}.default.html {path}/default.html
-       file_server
+	try_files {path} {path}.html {path}/index.html {path}.default.html {path}/default.html
+	file_server
 }
 
 (serve_protected_files) {
-        import protected
-        import serve_files
- }
+	import protected
+	import serve_files
+}
 
 {{ instance_name }} {
-    # Base config
-    encode gzip
-    root * /var/www/html
+	# Base config
+	encode gzip
+	root * /var/www/html
 
-    # Security headers
-    header {
-        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-        X-Frame-Options "DENY"
-        X-Content-Type-Options "nosniff"
-        X-XSS-Protection "1; mode=block"
-        Referrer-Policy "strict-origin-when-cross-origin"
-        -Server
-        Content-Security-Policy "default-src 'self' https://github.com https://*.githubusercontent.com; script-src 'self' 'unsafe-inline' https://github.com; style-src 'self' 'unsafe-inline' https://github.com; img-src 'self' data: https:; frame-ancestors 'none'"
-        Permissions-Policy "geolocation=(), midi=(), sync-xhr=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), fullscreen=(self), payment=()"
-    }
+	# Security headers
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Frame-Options "DENY"
+		X-Content-Type-Options "nosniff"
+		X-XSS-Protection "1; mode=block"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+		Content-Security-Policy "default-src 'self' https://github.com https://*.githubusercontent.com; script-src 'self' 'unsafe-inline' https://github.com; style-src 'self' 'unsafe-inline' https://github.com; img-src 'self' data: https:; frame-ancestors 'none'"
+		Permissions-Policy "geolocation=(), midi=(), sync-xhr=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), fullscreen=(self), payment=()"
+	}
 
+	# Authentication routes
+	handle /oauth2/* {
+		import authenticated
+	}
 
-    # Authentication routes
-    handle /oauth2/* {
-        import authenticated
-    }
+	handle /authorities* {
+		import serve_protected_files
+	}
 
-    handle /authorities* {
-        import serve_protected_files
-    }
+	handle /menu* {
+		import serve_protected_files
+	}
 
-    handle /menu* {
-        import serve_protected_files
-    }
+	handle /portal* {
+		import protected
+	}
 
-    handle /repos* {
-        import serve_protected_files
-    }
+	handle /repos* {
+		import serve_protected_files
+	}
 
-    handle /whats_that* {
-        import serve_protected_files
-    }
+	handle /whats_that* {
+		import serve_protected_files
+	}
 
-    handle /whoami* {
-        import authenticated
-        respond "{user.name} ({user.email}) - Member: {user.roles}"
-    }
+	handle /whoami* {
+		import authenticated
+		respond "{user.name} ({user.email}) - Member: {user.roles}"
+	}
 
-    # Public (default) routes
-    handle {
-        import serve_files
-    }
+	# Public (default) routes
+	handle {
+		import serve_files
+	}
 
-    handle_errors {
-        @custom_err file /{err.status_code}.html /error.html
-        handle @custom_err {
-            rewrite * {file_match.relative}
-            file_server
-        }
-        respond "{err.status_code} {err.status_text}"
-    }
+	handle_errors {
+		@custom_err file /{err.status_code}.html /error.html
+		handle @custom_err {
+			rewrite * {file_match.relative}
+			file_server
+		}
+		respond "{err.status_code} {err.status_text}"
+	}
 }

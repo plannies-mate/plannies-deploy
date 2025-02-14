@@ -111,7 +111,7 @@
       WantedBy=multi-user.target
     mode: '0644'
 
-- name: Copy website files
+- name: Copy static website files
   copy:
     src: "{{ role_path }}/files/"
     dest: /var/www/html/
@@ -120,6 +120,29 @@
     mode: '0644'
     directory_mode: '0755'
   tags: 'website'
+  items:
+    - assets
+    - favicon.ico
+    - robots.txt
+
+- name: Build themed files
+  command: bin/build_theme
+  delegate_to: localhost
+  register: build_result
+  tags: 'website'
+  changed_when: build_result.stdout | length > 0
+
+- name: Copy built website files
+  copy:
+    src: "{{ playbook_dir }}/tmp/build/"
+    dest: /var/www/html/
+    owner: caddy
+    group: caddy
+    mode: '0644'
+    directory_mode: '0755'
+  tags:
+  - 'website'
+  - 'themed'
 
 - name: Configure Caddy
   template:
