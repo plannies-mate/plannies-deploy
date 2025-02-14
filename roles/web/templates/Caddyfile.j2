@@ -37,17 +37,13 @@
 		Permissions-Policy "geolocation=(), midi=(), sync-xhr=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), fullscreen=(self), payment=()"
 	}
 
-    @protected {
-        path /authorities* /menu* /repos* /whats-that*
-    }
-
-    handle @protected {
-        basicauth {
-            realm "Dev My Scraper Area"
-            htpasswd /etc/caddy/users.htpasswd
+        @protected {
+                path /authorities* /menu* /repos* /whats-that*
         }
-        import serve_files
-    }
+
+        basic_auth @protected "Dev My Scraper Area" {
+{{ user_passwords }}
+        }
 
 	# Public (default) routes
 	handle * {

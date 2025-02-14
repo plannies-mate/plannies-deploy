@@ -7,7 +7,7 @@ The proxy is intended for testing morph.io scrapers you are working on.
 The web server is intended to host planners-mate web server, with updates by planners-kit 
 
 For example setting MORPH_AUSTRALIAN_PROXY
-to http://user:passowrd@planners-mate.exmple.com:43210/
+to http://user:password@planners-mate.exmple.com:43210/
 
 Requirements
 ------------

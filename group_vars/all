@@ -13,6 +13,8 @@ github_client_secret: "{{ lookup('env', 'GITHUB_CLIENT_SECRET') }}"
 
 ubuntu_pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"
 
+user_passwords: "{{ lookup('file', playbook_dir + '/files/users.passwd') }}"
+
 dns_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
 dns_provider: "linode"
 linode_type: "g6-nanode-1"

@@ -128,17 +128,6 @@
     - robots.txt
     - assets
 
-- name: Copy web passwords
-  copy:
-    src: "{{ playbook_dir }}/files/users.htpasswd"
-    dest: "/etc/caddy/users.htpasswd"
-    owner: caddy
-    group: caddy
-    mode: '0644'
-  tags:
-  - 'website'
-  - 'htpasswd'
-
 - name: Build themed files
   command: bin/build_theme
   delegate_to: localhost
@@ -166,7 +155,9 @@
     owner: caddy
     group: caddy
     mode: '0644'
-  tags: 'website'
+  tags:
+  - 'website'
+  - 'users'
   notify: restart caddy
 
 - name: Enable and start Caddy

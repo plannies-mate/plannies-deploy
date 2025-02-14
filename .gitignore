@@ -2,7 +2,7 @@
 /.ports
 
 # passwords for web site
-/files/users.htpasswd
+/files/users.passwd
 
 # Example files
 !/.envrc.example
