@@ -9,6 +9,12 @@ The web server is intended to host planners-mate web server, with updates by pla
 For example setting MORPH_AUSTRALIAN_PROXY
 to http://user:password@planners-mate.exmple.com:43210/
 
+See Also:
+- SPECS-IN-COMMON.md - Specs shared with plannies-mate
+- SPECS.MD - specs specific to this project
+- IMPLEMENTATION.md - implementation decisions made
+- GUIDELINES.md - Guidelines for AIs and Developers (shared with plannies-mate)
+
 Requirements
 ------------
  
