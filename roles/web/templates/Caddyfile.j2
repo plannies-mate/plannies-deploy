@@ -2,8 +2,6 @@
 	# Global options
 	admin off
 	debug
-	order authenticate before respond
-	order authorize before basicauth
 
 	log {
 		output file /var/log/caddy/access.log {
@@ -12,81 +10,14 @@
 			roll_keep_for 168h
 		}
 		format console
-		level DEBUG
-	}
-
-	# Security configuration
-	security {
-		oauth identity provider github {
-			realm github
-			driver github
-			client_id "{{ github_client_id }}"
-			client_secret "{{ github_client_secret }}"
-			scopes read:user read:org
-		}
-
-		authentication portal myportal {
-			enable identity provider github
-			crypto default token lifetime 3600
-			crypto key sign-verify "{{ jwt_shared_key }}"
-			cookie domain {{ instance_name }}
-			cookie insecure off
-			cookie samesite lax
-
-			ui {
-				links {
-					"Crikey! What's That?" /whats_that icon "las la-question"
-					"Authorities" /authorities icon "las la-city"
-					"Repositories" "/repos" icon "las la-github"
-					"Caddy Version" "/version" icon "las la-code-branch"
-					"My Identity" "/whoami" icon "las la-user"
-				}
-			}
-
-			transform user {
-				match realm github
-				match sub github.com/mlander
-				action add role authp/user
-			}
-
-			transform user {
-				match realm github
-				match sub github.com/ianheggie-aof github.com/ianheggie
-				action add role authp/admin
-				ui link "Admin" /admin icon "las la-admin"
-			}
-		}
-
-		authorization policy restricted {
-			set auth url https://{{ instance_name }}/oauth2/github
-			crypto key verify "{{ jwt_shared_key }}"
-			allow roles authp/admin authp/user
-			validate bearer header
-			inject headers with claims
-			#deny unauthorized any
-		}
+		level INFO
 	}
 }
 
 # snippets
-
-(authenticated) {
-	authenticate with myportal
-}
-
-(protected) {
-	import authenticated
-	authorize with restricted
-}
-
 (serve_files) {
 	try_files {path} {path}.html {path}/index.html {path}.default.html {path}/default.html
 	file_server
-}
-
-(serve_protected_files) {
-	import protected
-	import serve_files
 }
 
 {{ instance_name }} {
@@ -106,43 +37,25 @@
 		Permissions-Policy "geolocation=(), midi=(), sync-xhr=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), fullscreen=(self), payment=()"
 	}
 
-	# Authentication routes
-	handle /oauth2/* {
-		import authenticated
-	}
+    @protected {
+        path /authorities* /menu* /repos* /whats-that*
+    }
 
-	handle /authorities* {
-		import serve_protected_files
-	}
-
-	handle /menu* {
-		import serve_protected_files
-	}
-
-	handle /portal* {
-		import protected
-	}
-
-	handle /repos* {
-		import serve_protected_files
-	}
-
-	handle /whats_that* {
-		import serve_protected_files
-	}
-
-	handle /whoami* {
-		import authenticated
-		respond "{user.name} ({user.email}) - Member: {user.roles}"
-	}
+    handle @protected {
+        basicauth {
+            realm "Dev My Scraper Area"
+            htpasswd /etc/caddy/users.htpasswd
+        }
+        import serve_files
+    }
 
 	# Public (default) routes
-	handle {
+	handle * {
 		import serve_files
 	}
 
 	handle_errors {
-		@custom_err file /{err.status_code}.html /error.html
+		@custom_err file /errors/{err.status_code}.html /errors/error.html
 		handle @custom_err {
 			rewrite * {file_match.relative}
 			file_server

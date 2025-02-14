@@ -50,11 +50,14 @@ obscure_cmd() {
 }
 
 update_cmd() {
-    run_playbook update "$@" &&
-      echo "Sleeping 10 seconds ..." &&
-      sleep 10 &&
-      status_cmd &&
-      bin/test_proxy 
+    if run_playbook update "$@" ; then
+        if [ -z "$NO_TEST" ]; then
+            echo "Sleeping 10 seconds ..." &&
+            sleep 10 &&
+            status_cmd &&
+            bin/test_proxy 
+        fi
+    fi
 }
 
 run_playbook() {

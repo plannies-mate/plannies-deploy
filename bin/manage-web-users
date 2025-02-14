@@ -1,0 +1,43 @@
+#!/bin/bash
+
+action="$1"
+username="$2"
+
+HTPASSWD_FILE="files/users.htpasswd"
+
+[ -f "$HTPASSWD_FILE" ] || touch "$HTPASSWD_FILE"
+
+sync_htpasswd()
+{
+    NO_TEST=1 TAGS=htpasswd bin/provision update
+}
+
+case "$action" in
+add)
+    if [ -z "$username" ]; then
+        echo "Usage: $0 add <username>"
+        exit 1
+    fi
+    htpasswd -B "$HTPASSWD_FILE" "$username"
+    sync_htpasswd
+    ;;
+delete)
+    if [ -z "$username" ]; then
+        echo "Usage: $0 delete <username>"
+        exit 1
+    fi
+    htpasswd -D "$HTPASSWD_FILE" "$username"
+    sync_htpasswd
+    ;;
+list)
+    cut -d: -f1 "$HTPASSWD_FILE"
+    ;;
+sync)
+    sync_htpasswd
+    ;;
+*)
+    echo "Usage: $0 {add|delete|list|sync} [username]"
+    exit 1
+    ;;
+esac
+

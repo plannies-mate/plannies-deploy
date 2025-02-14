@@ -3,12 +3,13 @@
 - name: Install required packages
   apt:
     name:
-      - debian-keyring
-      - debian-archive-keyring
+      - apache2-utils
       - apt-transport-https
       - curl
-      - gnupg
+      - debian-keyring
+      - debian-archive-keyring
       - git
+      - gnupg
       - golang-go
     state: present
 
@@ -37,22 +38,12 @@
     state: present
     update_cache: yes
 
-- name: Build Caddy with plugins
+- name: Build Caddy
   ansible.builtin.command:
-    cmd: xcaddy build --with github.com/greenpau/caddy-security
+    cmd: xcaddy build
     chdir: /tmp
   register: build_output
   changed_when: true
-
-- name: Create Caddy directories
-  file:
-    path: "{{ item }}"
-    state: directory
-    mode: '0755'
-  loop:
-    - /etc/caddy
-    - /var/www/html
-    - /var/log/caddy
 
 - name: Install Caddy binary
   copy:
@@ -69,6 +60,20 @@
     home: /var/lib/caddy
     create_home: yes
 
+- name: Create Caddy directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: caddy
+    group: caddy
+    mode: '0755'
+  loop:
+    - /etc/caddy
+    - /var/www/html
+    - /var/www/html/repos
+    - /var/www/html/authorities
+    - /var/log/caddy
+
 - name: Set directory ownership
   file:
     path: "{{ item }}"
@@ -79,8 +84,6 @@
   loop:
     - /etc/caddy
     - /var/www/html
-    - /var/www/html/repos
-    - /var/www/html/authorities
     - /var/log/caddy
     - /var/lib/caddy
 
@@ -114,7 +117,7 @@
 - name: Copy static website files
   copy:
     src: "{{ role_path }}/files/{{ item }}"
-    dest: "/var/www/html/{{ item }}"
+    dest: "/var/www/html/"
     owner: caddy
     group: caddy
     mode: '0644'
@@ -125,12 +128,24 @@
     - robots.txt
     - assets
 
+- name: Copy web passwords
+  copy:
+    src: "{{ playbook_dir }}/files/users.htpasswd"
+    dest: "/etc/caddy/users.htpasswd"
+    owner: caddy
+    group: caddy
+    mode: '0644'
+  tags:
+  - 'website'
+  - 'htpasswd'
+
 - name: Build themed files
   command: bin/build_theme
   delegate_to: localhost
   register: build_result
   tags: 'website'
-  changed_when: build_result.stdout | length > 0
+  become: false
+  changed_when: "'Generated' in build_result.stdout"
 
 - name: Copy built website files
   copy:

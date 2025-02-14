@@ -1,6 +1,9 @@
 # My ports
 /.ports
 
+# passwords for web site
+/files/users.htpasswd
+
 # Example files
 !/.envrc.example
 
