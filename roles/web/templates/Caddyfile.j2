@@ -41,10 +41,10 @@
             }
 
 
-            # FIXME transform user {
-            #    match realm github
-            #    action set role authp/user with org planners-mate
-            #}
+            transform user {
+                match realm github
+                action add role authp/user with org plannies-mate
+            }
 
             # Set custom pages
             # FIXME custom pages {
@@ -116,7 +116,12 @@
     handle /menu* {
         import serve_protected_files
     }
+
     handle /repos* {
+        import serve_protected_files
+    }
+
+    handle /whats_that* {
         import serve_protected_files
     }
 
