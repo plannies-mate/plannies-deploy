@@ -22,7 +22,7 @@
             driver github
             client_id "{{ github_client_id }}"
             client_secret "{{ github_client_secret }}"
-            scopes user:email read:org
+            scopes read:user read:org
         }
 
         authentication portal myportal {
@@ -32,35 +32,65 @@
             cookie domain {{ instance_name }}
             cookie insecure off
             cookie samesite lax
-            
+
             ui {
                 links {
+                    "Menu" "/menu" icon "las la-bars"
                     "My Identity" "/whoami" icon "las la-user"
                 }
             }
 
-            transform user {
-                match realm github
-                match org plannies-mate
-                action set role authp/user
-            }
+
+            # FIXME transform user {
+            #    match realm github
+            #    action set role authp/user with org planners-mate
+            #}
+
+            # Set custom pages
+            # FIXME custom pages {
+            #      signin /login
+            #      forbidden /auth-error.html
+            #  }
         }
 
         authorization policy restricted {
             set auth url https://{{ instance_name }}/oauth2/github
             crypto key verify "{{ jwt_shared_key }}"
-            allow roles authp/user
+            # FIXME  allow roles authp/user
             validate bearer header
+            # FIXME validate origin
             inject headers with claims
             deny unauthorized any
         }
     }
 }
 
+# snippets
+
+(authenticated) {
+        authenticate with myportal
+}
+
+(protected) {
+        import authenticated
+        authorize with restricted
+}
+
+(serve_files) {
+       try_files {path} {path}.html {path}/index.html {path}.default.html {path}/default.html
+       file_server
+}
+
+(serve_protected_files) {
+        import protected
+        import serve_files
+ }
+
 {{ instance_name }} {
     # Base config
     encode gzip
-    
+    root * /var/www/html
+
     # Security headers
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
@@ -73,73 +103,39 @@
         Permissions-Policy "geolocation=(), midi=(), sync-xhr=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), fullscreen=(self), payment=()"
     }
 
-    # Authentication endpoints
+
+    # Authentication routes
     handle /oauth2/* {
-        authenticate with myportal
+        import authenticated
     }
 
-    # Debugging endpoint
-    handle /whoami {
-        authenticate with myportal
-        respond "{user.name} ({user.email}) - Roles: {user.roles}"
+    handle /authorities* {
+        import serve_protected_files
     }
 
-    # Protected paths
-    handle /authorities/* {
-        authenticate with myportal
-        authorize with restricted
-        root * /var/www/html
-        try_files {path} {path}.html {path}/index.html {path}.default.html {path}/default.html /404.html
-        file_server
+    handle /menu* {
+        import serve_protected_files
+    }
+    handle /repos* {
+        import serve_protected_files
     }
 
-    handle /repos/* {
-        authenticate with myportal
-        authorize with restricted
-        root * /var/www/html
-        try_files {path} {path}.html {path}/index.html {path}.default.html {path}/default.html /404.html
-        file_server
+    handle /whoami* {
+        import authenticated
+        respond "{user.name} ({user.email}) - Member: {user.roles}"
     }
 
-    # Public paths
-    handle /* {
-        root * /var/www/html
-        try_files {path} {path}.html {path}/index.html {path}.default.html {path}/default.html /404.html
-        file_server
+    # Public (default) routes
+    handle {
+        import serve_files
     }
 
     handle_errors {
-        # Authentication/Authorization errors
-        @auth_error expression `{err.status_code} in [401, 403]`
-        handle @auth_error {
-            root * /var/www/html
-            rewrite * /auth-error.html
+        @custom_err file /{err.status_code}.html /error.html
+        handle @custom_err {
+            rewrite * {file_match.relative}
             file_server
         }
-
-        # Not found
-        @not_found expression `{err.status_code} == 404`
-        handle @not_found {
-            root * /var/www/html
-            rewrite * /404.html
-            file_server
-        }
-
-        # Debug endpoint
-        @debug_error expression `{header.X-Debug} == "true"`
-        handle @debug_error {
-            respond `{
-                "status": {err.status_code},
-                "error": "{err.message}",
-                "path": "{path}"
-            }`
-        }
-
-        # Everything else
-        handle * {
-            root * /var/www/html
-            rewrite * /error.html
-            file_server
-        }
+        respond "{err.status_code} {err.status_text}"
     }
 }

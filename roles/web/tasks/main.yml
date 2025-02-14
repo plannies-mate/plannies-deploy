@@ -111,30 +111,41 @@
       WantedBy=multi-user.target
     mode: '0644'
 
-- name: Copy static pages
+#- name: Copy static pages
+#  copy:
+#    src: "{{ item }}"
+#    dest: "/var/www/html/{{ item }}"
+#    owner: caddy
+#    group: caddy
+#    mode: '0644'
+#  tags: 'website'
+#  loop:
+#    - 404.html
+#    - android-chrome-192x192.png
+#    - android-chrome-512x512.png
+#    - apple-touch-icon.png
+#    - auth-error.html
+#    - auth-error.html.bak
+#    - authorities/default.html
+#    - default.html
+#    - error.html
+#    - error.html.bak
+#    - favicon-16x16.png
+#    - favicon-32x32.png
+#    - favicon.ico
+#    - repos/default.html
+#    - robots.txt
+#    - site.webmanifest
+
+- name: Copy website files
   copy:
-    src: "{{ item }}"
-    dest: "/var/www/html/{{ item }}"
+    src: "{{ role_path }}/files/"
+    dest: /var/www/html/
     owner: caddy
     group: caddy
     mode: '0644'
-  loop:
-    - 404.html
-    - android-chrome-192x192.png
-    - android-chrome-512x512.png
-    - apple-touch-icon.png
-    - auth-error.html
-    - auth-error.html.bak
-    - authorities/default.html
-    - default.html
-    - error.html
-    - error.html.bak
-    - favicon-16x16.png
-    - favicon-32x32.png
-    - favicon.ico
-    - repos/default.html
-    - robots.txt
-    - site.webmanifest
+    directory_mode: '0755'
+  tags: 'website'
 
 - name: Configure Caddy
   template:
@@ -143,9 +154,11 @@
     owner: caddy
     group: caddy
     mode: '0644'
+  tags: 'website'
   notify: restart caddy
 
 - name: Enable and start Caddy
+  tags: 'website'
   systemd:
     name: caddy
     state: started

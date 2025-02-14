@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Not Happy Jan! - Planners Mate</title>
+    <title>Welcome to Planners Mate</title>
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -37,21 +37,27 @@
             color: #b5632d;
             margin-bottom: 1rem;
         }
-        .message {
-            margin: 2rem 0;
-            font-size: 1.1em;
+        .login-button {
+            display: inline-block;
+            background: #2ea44f;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 1rem;
+            font-weight: 500;
+        }
+        .login-button:hover {
+            background: #2c974b;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Stone the Flamin' Crows!</h1>
-        <div class="message">
-            <p>The server's chucked a wobbly! 🙃</p>
-            <p>Looks like we've got a few roos loose in the top paddock.</p>
-            <p>Our tech mob is on it faster than a dingo on a snag!</p>
-        </div>
-        <p><a href="/" style="color: #b5632d;">→ Back to Safety</a></p>
+        <h1>G'day, Welcome to Planners Mate!</h1>
+        <p>You'll need to sign in with GitHub to access this part of the site, mate.</p>
+        <p>Make sure you're a member of the planners-mate organization!</p>
+        <a href="/oauth2/github/login" class="login-button">Sign in with GitHub</a>
     </div>
 </body>
 </html>
