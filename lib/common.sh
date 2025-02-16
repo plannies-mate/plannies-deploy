@@ -12,9 +12,14 @@ ensure_linode_token() {
     fi
 }
 
-ensure_linode_domain() {
+ensure_all_env_variabls() {
+    ensure_linode_token
     if [ -z "$LINODE_DOMAIN" ]; then
         echo "Error: LINODE_DOMAIN environment variable not set"
+        exit 1
+    fi
+    if [ -z "$CLOUDFLARE_DOMAIN" ]; then
+        echo "Error: CLOUDFLARE_DOMAIN environment variable not set"
         exit 1
     fi
 }

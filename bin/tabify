@@ -3,5 +3,17 @@
 # Replaces every 8 spaces with a tab
 # Used to format Caddyfile as caddy wants to stop its whineing!
 
-exec sed 's/        /\t/g' "$@"
+case "$1" in
+-4)
+    shift
+    exec sed 's/    /\t/g' "$@"
+    ;;
+-8)
+    shift
+    exec sed 's/        /\t/g' "$@"
+    ;;
+*)
+    exec sed 's/        /\t/g' "$@"
+    ;;
+esac
 

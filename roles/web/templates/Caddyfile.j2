@@ -1,5 +1,4 @@
 {
-	# Global options
 	admin off
 	debug
 
@@ -14,18 +13,15 @@
 	}
 }
 
-# snippets
 (serve_files) {
 	try_files {path} {path}.html {path}/index.html {path}.default.html {path}/default.html
 	file_server
 }
 
 {{ instance_name }} {
-	# Base config
-	encode gzip
 	root * /var/www/html
+	encode gzip
 
-	# Security headers
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
 		X-Frame-Options "DENY"
@@ -37,17 +33,14 @@
 		Permissions-Policy "geolocation=(), midi=(), sync-xhr=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), fullscreen=(self), payment=()"
 	}
 
-        @protected {
-                path /authorities* /menu* /repos* /whats-that*
-        }
+	@cloudflare remote_ip {{ cf_ipv4.content.split('\n') | join(' ') }} {{ cf_ipv6.content.split('\n') | join(' ') }}
 
-        basic_auth @protected "Dev My Scraper Area" {
-{{ user_passwords }}
-        }
-
-	# Public (default) routes
-	handle * {
+	handle @cloudflare {
 		import serve_files
+	}
+
+	handle {
+		redir https://{{ cloudflare_hostname }}{uri} permanent
 	}
 
 	handle_errors {
@@ -59,3 +52,5 @@
 		respond "{err.status_code} {err.status_text}"
 	}
 }
+
+# vim: ai noet ts=4 sw=4

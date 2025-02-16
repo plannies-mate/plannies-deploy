@@ -63,8 +63,7 @@ update_cmd() {
 run_playbook() {
     playbook="$1"
     shift
-    ensure_linode_token
-    ensure_linode_domain
+    ensure_all_env_variabls
 
     extra_args=''
     if [ -n "$BOOT" ]; then

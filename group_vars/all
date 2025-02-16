@@ -1,7 +1,12 @@
 # group_vars/all
 ---
+# The proxy on linode and the backend for cloudflare
 linode_domain: "{{ lookup('env', 'LINODE_DOMAIN') }}"
 instance_name: "plannies-mate.{{ linode_domain }}"
+
+# the website with Cloudflare access for login control
+cloudflare_domain: "{{ lookup('env', 'CLOUDFLARE_DOMAIN') }}"
+cloudflare_hostname: "plannies-mate.{{ cloudflare_domain }}"
 
 proxy_password: "{{ lookup('file', playbook_dir + '/.ports') | regex_search('PROXY_PASSWORD=(\\S+)','\\1') | first }}"
 ssh_port: "{{ lookup('file', playbook_dir + '/.ports') | regex_search('SSH_PORT=(\\d+)','\\1') | first }}"

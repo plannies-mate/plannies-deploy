@@ -2,8 +2,7 @@
 
 source lib/common.sh
 
-ensure_linode_token
-ensure_linode_domain
+ensure_all_env_variabls
 load_ports
 
 h="plannies-mate.$LINODE_DOMAIN"
