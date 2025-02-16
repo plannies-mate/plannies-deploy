@@ -1,6 +1,7 @@
 # Plannies-Deploy Implementation
 
 See Also:
+
 - SPECS-IN-COMMON.md - Specs shared with plannies-mate
 - SPECS.MD - specs specific to this project
 - IMPLEMENTATION.md - implementation decisions made
@@ -64,6 +65,16 @@ roles/web/files/
     - Ansible copies assets directly
     - Themed content copied from tmp/build/
     - Maintains separation between raw and themed content in the repos (themed content is not committed to git)
+
+#### Theme Notes
+
+- Uses Font Awesome icons via CDN
+- Uses Topography pattern from heropatterns.com for subtle background texture
+- Uses Green and gold Australian color scheme
+- Landing page is a clean bold design with a splash of fun, whilst being informative
+- Everything else continues the theme but is focused on being useful to me and my fellow co-workers
+- Whimsical Aussie wording and phrasing, with the typical Aussie not taking ourselves too seriously
+    - Despite this, Usefulness and clarity is TOP priority
 
 ### Security Implementation
 
@@ -146,39 +157,5 @@ Use `bin/test_proxy`
     - Content verification
     - Auth testing
     - Error handling
+
    
-# Misc Notes
-
-Current structure:
-/docs/
-├── index.html           # Landing page with hero image
-├── cricky-whats-that.html  # The analyzer page (to be built)
-├── css/
-│   ├── base.css        # Layout and structure
-│   └── theme.css       # Colors, fonts, decorative elements
-└── js/
-    └── analyzer.js     # Analyzer logic (to be built)
-
-The landing page uses:
-- Hero image: Twelve Apostles (https://images.unsplash.com/photo-1519406155028-jmHJLXHHRXA)
-- Font Awesome icons via CDN
-- My GitHub avatar: https://avatars.githubusercontent.com/u/183138466
-- Topography pattern from heropatterns.com for subtle background texture
-- Green and gold Australian color scheme
-
-The analyzer uses:
-- List of repos from https://github.com/orgs/planningalerts-scrapers/repositories.json
-- removes the prefix "multiple_" from repo name and then searches for the name (case insenesitive) in the contents of the drag and dropped url.
-  - the text could be in body text, src, hrefs etc - so don't botehr analysing the oage, just do a text search.
-- allow for some custom search functions for specific examples, but at the moment the text search will be sufficient.
-- sort by relevance.
-- score text that is a valid dictonary word lower than unique strings
-- score text that is not preceeded or followed by alpha characters much higher, as otherwise "act" wil match "action" for instance (act is an australian state)
-- also add to the score if one or more words from the repo description are present.
-
-This will become an analyser to determine which of the https://github.com/orgs/planningalerts-scrapers/repositories scrapers to use.
-
-What I have manually discovered:
-* multiple_civica is detected by discovering a script src with */civica.jquery.*
-* multiple_planbuild is detected because of the words "PlanBuild Tasmania".
-* multiple_epathway_scraper is detected because of a link that includes */ePathway/*

@@ -26,8 +26,6 @@ Note: README.md is for setup and usage by the Developer
    - Shows under-construction.html for missing pages
    - robots.txt limiting indexing
 
-
-
 ## Environment
 
 See README.md
