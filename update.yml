@@ -9,4 +9,5 @@
     - { role: security, tags: [ 'security' ] }
     - { role: proxy,    tags: [ 'proxy' ] }
     - { role: web,      tags: [ 'web' ] }
+    - { role: optimize, tags: [ 'optimize' ] }
     - { role: reboot,   tags: [ 'reboot' ] }

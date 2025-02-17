@@ -30,4 +30,3 @@
     - 'users'
     - 'cloudflare'
   notify: restart caddy
-  

@@ -1,6 +1,9 @@
 ---
 - name: PACKAGES | Update apt cache
-  tags: 'packages'
+  tags:
+  - 'packages'
+  - 'web'
+  - 'website'
   apt:
     update_cache: yes
 

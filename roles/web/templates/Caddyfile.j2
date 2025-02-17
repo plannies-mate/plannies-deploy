@@ -29,9 +29,43 @@
 	}
 }
 
-{{ instance_name }} {
+(common_config) {
 	root * /var/www/html
 	encode gzip
+
+    # [internal|<email>] | [<cert_file> <key_file>]
+    tls  {
+        # protocols <min> [<max>]
+        # ciphers   <cipher_suites...>
+        # curves    <curves...>
+        # alpn      <values...>
+        # load      <paths...>
+        # ca        <ca_dir_url>
+        # ca_root   <pem_file>
+        key_type rsa4096 # ed25519|p256|p384|rsa2048|rsa4096
+        # dns       <provider_name> [<params...>]
+        # propagation_timeout <duration>
+        # propagation_delay   <duration>
+        # dns_ttl             <duration>
+        # dns_challenge_override_domain <domain>
+        # resolvers <dns_servers...>
+        # eab       <key_id> <mac_key>
+        # on_demand
+        # reuse_private_keys
+        # client_auth {
+        #     mode                   [request|require|verify_if_given|require_and_verify]
+        #     trust_pool             <module>
+        #     verifier 			   <module>
+        # }
+        # issuer          <issuer_name>  [<params...>]
+        # get_certificate <manager_name> [<params...>]
+        # insecure_secrets_log <log_file>
+    }
+
+}
+
+{{ instance_name }} {
+	import common_config
 
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
@@ -62,12 +96,10 @@
 	}
 
     import serve_errors
-
 }
 
 {{ assets_name }} {
-	root * /var/www/html
-	encode gzip
+	import common_config
 
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
@@ -75,7 +107,6 @@
         Referrer-Policy "strict-origin-when-cross-origin"
         -Server
     }
-
 
     @asset_paths {
         path /assets/* /errors/*

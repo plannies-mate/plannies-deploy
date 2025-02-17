@@ -1,4 +1,4 @@
 ---
-- import_tasks: build_caddy
-- import_tasks: configure_caddy
-- import_tasks: build_website
+- import_tasks: install_caddy.yml
+- import_tasks: configure_caddy.yml
+- import_tasks: build_website.yml

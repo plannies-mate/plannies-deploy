@@ -1,0 +1,30 @@
+# roles/base/tasks/optimize-memory.yml
+---
+- name: Optimize fail2ban memory usage
+  tags: 'optimize'
+  copy:
+    dest: /etc/fail2ban/fail2ban.conf
+    content: |
+      [Definition]
+      dbpurgeage = 1d
+      dbmaxmatches = 100
+
+- name: Create journald config directory
+  tags: 'optimize'
+  file:
+    path: /etc/systemd/journald.conf.d
+    state: directory
+    mode: '0755'
+    
+- name: Optimize journald memory usage
+  tags: 'optimize'
+  copy:
+    dest: /etc/systemd/journald.conf.d/limits.conf
+    content: |
+      [Journal]
+      SystemMaxUse=100M
+      RuntimeMaxUse=50M
+      SystemMaxFileSize=10M
+      RuntimeMaxFileSize=10M
+      Storage=volatile
+

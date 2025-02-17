@@ -1,0 +1,138 @@
+
+---
+- name: Remove unnecessary log rotation
+  tags: 'optimize'
+  copy:
+    dest: /etc/logrotate.d/rsyslog
+    content: |
+      /var/log/syslog
+      /var/log/mail.log
+      /var/log/kern.log
+      /var/log/auth.log
+      /var/log/user.log
+      /var/log/cron.log
+      {
+      	rotate 3
+      	daily
+        maxsize 10M
+      	missingok
+      	notifempty
+      	compress
+      	delaycompress
+      	sharedscripts
+      	postrotate
+      		/usr/lib/rsyslog/rsyslog-rotate
+      	endscript
+      }
+
+- name: Remove unnecessary packages - stage 1
+  apt:
+    name:
+      # Command line tools not needed in production
+      - vim
+      - vim-runtime  # keeping vim-tiny for emergencies
+      - telnet
+      - tcpdump
+      - strace
+      # Development/headers (keeping golang for caddy)
+      - cpp
+      - gcc
+      - g++
+      - linux-headers-*
+      # Performance monitoring not needed in production
+      - sysstat
+      - trace-cmd
+      # Storage tools we don't use
+      - lvm2
+      - mdadm
+      - multipath-tools
+      - thin-provisioning-tools
+      - xfsprogs
+    state: absent
+    purge: true
+    autoremove: true
+
+- name: Remove unnecessary daemons - stage 2
+  apt:
+    name:
+      - bolt  # thunderbolt management
+      - modemmanager  # cellular modem management
+      - open-vm-tools  # VMware tools (assuming this is on Linode)
+      - packagekit  # package management daemon
+      - policykit-1
+    state: absent
+    purge: true
+    autoremove: true
+
+- name: Remove XML and documentation packages
+  apt:
+    name:
+      - xml-core  # XML infra not needed by our services
+      - sgml-base # Only needed for docs
+      - groff-base  # Text formatting not needed
+    state: absent
+    purge: true
+    autoremove: true
+
+- name: Remove unnecessary boot services
+  apt:
+    name:
+      - lxd-agent-loader  # LXD agent not needed on Linode
+      - lxd-installer     # LXD installer not needed
+      - friendly-recovery # Recovery mode helper not needed
+      - sosreport        # System reporting tool not needed
+    state: absent
+    purge: true
+    autoremove: true
+
+- name: Remove optional utils
+  apt:
+    name:
+      - byobu          # Screen wrapper not needed
+      - zerofree       # Only needed for image prep
+      - fonts-liberation # Font families not needed
+      - fonts-liberation-sans-narrow
+    state: absent
+    purge: true
+    autoremove: true
+
+- name: Remove hardware-specific packages
+  apt:
+    name:
+      # Hardware packages not needed in VM
+      - linux-firmware          # Only needed for physical hardware
+      - fwupd                  # Firmware updates not needed in VM
+      - fwupd-signed
+      - firmware-sof-signed    # Sound firmware
+      - intel-microcode        # CPU microcode not needed in VM
+      - amd-microcode
+      - thermald              # Temperature management
+      - ubuntu-drivers-common # Hardware drivers
+      - wireless-tools        # No wireless in VM
+      - wpasupplicant
+
+      # Command suggestion system
+      - command-not-found
+      - command-not-found-data
+
+      # Shells rarely used by modern system packages
+      - ksh
+      - csh
+      - tcsh
+
+      # Cache cleanup
+      - apt-file  # Package content searching
+    state: absent
+    purge: true
+    autoremove: true
+
+- name: Clean apt cache
+  apt:
+    autoclean: true
+    clean: true
+
+- name: Clear APT cache
+  shell: |
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/cache/apt/archives/*    

@@ -52,6 +52,16 @@
     mode: '0755'
     remote_src: yes
 
+- name: Remove build only dependencies
+  apt:
+    name:
+      - golang-go
+      - git
+      - xcaddy
+    state: absent
+    purge: true
+    autoremove: true
+
 - name: Create caddy system user
   user:
     name: caddy
