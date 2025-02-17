@@ -1,0 +1,35 @@
+#
+---
+- name: Copy static website files
+  copy:
+    src: "{{ role_path }}/files/{{ item }}"
+    dest: "/var/www/html/"
+    owner: caddy
+    group: caddy
+    mode: '0644'
+    directory_mode: '0755'
+  tags: 'website'
+  loop:
+    - favicon.ico
+    - robots.txt
+    - assets
+
+- name: Build themed files
+  command: bin/build_theme
+  delegate_to: localhost
+  register: build_result
+  tags: 'website'
+  become: false
+  changed_when: "'Generated' in build_result.stdout"
+
+- name: Copy built website files
+  copy:
+    src: "{{ playbook_dir }}/tmp/build/"
+    dest: /var/www/html/
+    owner: caddy
+    group: caddy
+    mode: '0644'
+    directory_mode: '0755'
+  tags:
+    - 'website'
+    - 'themed'

@@ -12,10 +12,13 @@
       api_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
       domain: "{{ linode_domain }}"
       type: "A"
-      name: "{{ instance_name }}"
+      name: "{{ item }}"
       target: "{{ ansible_host }}"
       state: absent
     delegate_to: localhost
+    loop:
+    - "{{ instance_name }}"
+    - "{{ assets_name }}"
 
 - name: Destroy Proxy Instances
   hosts: localhost

@@ -20,12 +20,16 @@
         state: present
       register: linode
 
-    - name: Update DNS record
+    - name: Update main DNS record
       linode.cloud.domain_record:
         api_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
         domain: "{{ linode_domain }}"
         type: "A"
-        name: "{{ instance_name }}"
+        name: "{{ item }}"
         target: "{{ linode.instance.ipv4[0] }}"
         ttl_sec: 300
         state: present
+      loop:
+        - "{{ instance_name }}"
+        - "{{ assets_name }}"
+

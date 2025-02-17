@@ -158,4 +158,17 @@ Use `bin/test_proxy`
     - Auth testing
     - Error handling
 
-   
+## Plannies mate authentications
+
+We are using Cloudflare for plannies-mate.thesite.info in front of plannies-make.psst.link as back end and proxy.
+
+When you authenticate, don't give access to organisations.
+
+Test shows info matched against access rules:
+```json
+{
+  "name": null,
+  "email": "ian+oaf@heggie.biz",
+  "groups": []
+}
+```

@@ -3,6 +3,7 @@
 # The proxy on linode and the backend for cloudflare
 linode_domain: "{{ lookup('env', 'LINODE_DOMAIN') }}"
 instance_name: "plannies-mate.{{ linode_domain }}"
+assets_name: "plannies-assets.{{ linode_domain }}"
 
 # the website with Cloudflare access for login control
 cloudflare_domain: "{{ lookup('env', 'CLOUDFLARE_DOMAIN') }}"

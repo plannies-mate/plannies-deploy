@@ -18,31 +18,7 @@
 	file_server
 }
 
-{{ instance_name }} {
-	root * /var/www/html
-	encode gzip
-
-	header {
-		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-		X-Frame-Options "DENY"
-		X-Content-Type-Options "nosniff"
-		X-XSS-Protection "1; mode=block"
-		Referrer-Policy "strict-origin-when-cross-origin"
-		-Server
-		Content-Security-Policy "default-src 'self' https://github.com https://*.githubusercontent.com; script-src 'self' 'unsafe-inline' https://github.com; style-src 'self' 'unsafe-inline' https://github.com; img-src 'self' data: https:; frame-ancestors 'none'"
-		Permissions-Policy "geolocation=(), midi=(), sync-xhr=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), fullscreen=(self), payment=()"
-	}
-
-	@cloudflare remote_ip {{ cf_ipv4.content.split('\n') | join(' ') }} {{ cf_ipv6.content.split('\n') | join(' ') }}
-
-	handle @cloudflare {
-		import serve_files
-	}
-
-	handle {
-		redir https://{{ cloudflare_hostname }}{uri} permanent
-	}
-
+(serve_errors) {
 	handle_errors {
 		@custom_err file /errors/{err.status_code}.html /errors/error.html
 		handle @custom_err {
@@ -51,6 +27,69 @@
 		}
 		respond "{err.status_code} {err.status_text}"
 	}
+}
+
+{{ instance_name }} {
+	root * /var/www/html
+	encode gzip
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Frame-Options "DENY"
+        X-Content-Type-Options "nosniff"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+        Content-Security-Policy "default-src 'self' https://github.com https://*.githubusercontent.com; script-src 'self' 'unsafe-inline' https://github.com; style-src 'self' 'unsafe-inline' https://github.com; img-src 'self' data: https:; frame-ancestors 'none'"
+        Permissions-Policy "geolocation=(), midi=(), sync-xhr=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), fullscreen=(self), payment=()"
+    }
+
+    @protected_paths {
+        path /authorities* /whats_that* /repos*
+    }
+
+    @cloudflare_ips remote_ip {{ cf_ipv4.content.split('\n') | join(' ') }} {{ cf_ipv6.content.split('\n') | join(' ') }}
+
+	#handle @protected_paths {
+	#	handle @cloudflare_ips {
+	#		import serve_files
+	#	}
+	#	error 403
+	#}
+
+	handle {
+		import serve_files
+	}
+
+    import serve_errors
+
+}
+
+{{ assets_name }} {
+	root * /var/www/html
+	encode gzip
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+    }
+
+
+    @asset_paths {
+        path /assets/* /errors/*
+    }
+
+	handle @asset_paths {
+		import serve_files
+	}
+
+    handle {
+        respond "Nothing to see here, go see my mate!" 404
+    }
+
+    import serve_errors
 }
 
 # vim: ai noet ts=4 sw=4
