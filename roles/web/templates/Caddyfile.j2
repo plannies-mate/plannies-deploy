@@ -1,7 +1,8 @@
 {
 	admin off
-	debug
+	#debug
 
+    auto_https disable_redirects  # Don't force HTTPS
 	log {
 		output file /var/log/caddy/access.log {
 			roll_size 10mb
@@ -32,51 +33,46 @@
 (common_config) {
 	root * /var/www/html
 	encode gzip
-
-    # [internal|<email>] | [<cert_file> <key_file>]
-    tls  {
-        # protocols <min> [<max>]
-        # ciphers   <cipher_suites...>
-        # curves    <curves...>
-        # alpn      <values...>
-        # load      <paths...>
-        # ca        <ca_dir_url>
-        # ca_root   <pem_file>
-        key_type rsa4096 # ed25519|p256|p384|rsa2048|rsa4096
-        # dns       <provider_name> [<params...>]
-        # propagation_timeout <duration>
-        # propagation_delay   <duration>
-        # dns_ttl             <duration>
-        # dns_challenge_override_domain <domain>
-        # resolvers <dns_servers...>
-        # eab       <key_id> <mac_key>
-        # on_demand
-        # reuse_private_keys
-        # client_auth {
-        #     mode                   [request|require|verify_if_given|require_and_verify]
-        #     trust_pool             <module>
-        #     verifier 			   <module>
-        # }
-        # issuer          <issuer_name>  [<params...>]
-        # get_certificate <manager_name> [<params...>]
-        # insecure_secrets_log <log_file>
-    }
-
 }
 
-{{ instance_name }} {
+(tls_config) {
+    #tls {
+    #    # Attempt to match a site cloudflare is happy with (failed)
+    #    key_type rsa4096  # You already have this
+    #    protocols tls1.2 tls1.3
+    #    ciphers TLS_AES_256_GCM_SHA384 TLS_CHACHA20_POLY1305_SHA256 TLS_AES_128_GCM_SHA256
+    #    curves x25519 secp256r1 secp384r1
+    #    alpn h2 http/1.1
+    #    # Unknown command: ticket_lifetime 300  # Match edgar's session ticket lifetime
+    #}
+}
+
+(main_headers) {
+    header {
+        # Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        #X-Frame-Options "DENY"
+        #X-Content-Type-Options "nosniff"
+        #X-XSS-Protection "1; mode=block"
+        #Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+        # Content-Security-Policy "default-src 'self' https://github.com https://*.githubusercontent.com; script-src 'self' 'unsafe-inline' https://github.com; style-src 'self' 'unsafe-inline' https://github.com; img-src 'self' data: https:; frame-ancestors 'none'"
+        #Permissions-Policy "geolocation=(), midi=(), sync-xhr=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), fullscreen=(self), payment=()"
+    }
+}
+
+(asset_headers) {
+    header {
+        # Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        #X-Content-Type-Options "nosniff"
+        #Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+    }
+}
+
+http://{{ instance_name }} {
 	import common_config
 
-    header {
-        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-        X-Frame-Options "DENY"
-        X-Content-Type-Options "nosniff"
-        X-XSS-Protection "1; mode=block"
-        Referrer-Policy "strict-origin-when-cross-origin"
-        -Server
-        Content-Security-Policy "default-src 'self' https://github.com https://*.githubusercontent.com; script-src 'self' 'unsafe-inline' https://github.com; style-src 'self' 'unsafe-inline' https://github.com; img-src 'self' data: https:; frame-ancestors 'none'"
-        Permissions-Policy "geolocation=(), midi=(), sync-xhr=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), fullscreen=(self), payment=()"
-    }
+	import main_headers
 
     @protected_paths {
         path /authorities* /whats_that* /repos*
@@ -98,15 +94,57 @@
     import serve_errors
 }
 
-{{ assets_name }} {
+http://{{ assets_name }} {
 	import common_config
 
-    header {
-        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-        X-Content-Type-Options "nosniff"
-        Referrer-Policy "strict-origin-when-cross-origin"
-        -Server
+    import asset_headers
+
+    @asset_paths {
+        path /assets/* /errors/*
     }
+
+	handle @asset_paths {
+		import serve_files
+	}
+
+    handle {
+        respond "Nothing to see here, go see my mate!" 404
+    }
+
+    import serve_errors
+}
+
+https://{{ instance_name }} {
+	import common_config
+	import tls_config
+
+    import main_headers
+
+    @protected_paths {
+        path /authorities* /whats_that* /repos*
+    }
+
+    @cloudflare_ips remote_ip {{ cf_ipv4.content.split('\n') | join(' ') }} {{ cf_ipv6.content.split('\n') | join(' ') }}
+
+	#handle @protected_paths {
+	#	handle @cloudflare_ips {
+	#		import serve_files
+	#	}
+	#	error 403
+	#}
+
+	handle {
+		import serve_files
+	}
+
+    import serve_errors
+}
+
+https://{{ assets_name }} {
+	import common_config
+	import tls_config
+
+    import asset_headers
 
     @asset_paths {
         path /assets/* /errors/*
