@@ -9,5 +9,6 @@
     - { role: security, tags: [ 'security' ] }
     - { role: proxy,    tags: [ 'proxy' ] }
     - { role: web,      tags: [ 'web' ] }
+    - { role: oauth2_proxy, tags: [ 'oauth2' ] }
     - { role: optimize, tags: [ 'optimize' ] }
     - { role: reboot,   tags: [ 'reboot' ] }

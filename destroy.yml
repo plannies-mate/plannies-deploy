@@ -18,7 +18,6 @@
     delegate_to: localhost
     loop:
     - "{{ instance_name }}"
-    - "{{ assets_name }}"
 
 - name: Destroy Proxy Instances
   hosts: localhost

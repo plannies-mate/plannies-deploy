@@ -31,5 +31,4 @@
         state: present
       loop:
         - "{{ instance_name }}"
-        - "{{ assets_name }}"
 

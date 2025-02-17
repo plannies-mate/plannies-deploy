@@ -1,8 +1,7 @@
 {
 	admin off
-	#debug
+	debug
 
-    auto_https disable_redirects  # Don't force HTTPS
 	log {
 		output file /var/log/caddy/access.log {
 			roll_size 10mb
@@ -15,6 +14,7 @@
 }
 
 (serve_files) {
+    # default files are served until analysis is deployed with index files
 	try_files {path} {path}.html {path}/index.html {path}.default.html {path}/default.html
 	file_server
 }
@@ -69,23 +69,18 @@
     }
 }
 
-http://{{ instance_name }} {
+{{ instance_name }} {
 	import common_config
 
 	import main_headers
 
     @protected_paths {
-        path /authorities* /whats_that* /repos*
+        path /authorities* /oauth2* /repos* /whats_that*
     }
 
-    @cloudflare_ips remote_ip {{ cf_ipv4.content.split('\n') | join(' ') }} {{ cf_ipv6.content.split('\n') | join(' ') }}
-
-	#handle @protected_paths {
-	#	handle @cloudflare_ips {
-	#		import serve_files
-	#	}
-	#	error 403
-	#}
+    handle @protected_paths {
+        reverse_proxy localhost:4180
+    }
 
 	handle {
 		import serve_files
@@ -94,69 +89,14 @@ http://{{ instance_name }} {
     import serve_errors
 }
 
-http://{{ assets_name }} {
+http://127.0.0.1:88 {
 	import common_config
 
-    import asset_headers
-
-    @asset_paths {
-        path /assets/* /errors/*
-    }
-
-	handle @asset_paths {
-		import serve_files
-	}
-
-    handle {
-        respond "Nothing to see here, go see my mate!" 404
-    }
-
-    import serve_errors
-}
-
-https://{{ instance_name }} {
-	import common_config
-	import tls_config
-
-    import main_headers
-
-    @protected_paths {
-        path /authorities* /whats_that* /repos*
-    }
-
-    @cloudflare_ips remote_ip {{ cf_ipv4.content.split('\n') | join(' ') }} {{ cf_ipv6.content.split('\n') | join(' ') }}
-
-	#handle @protected_paths {
-	#	handle @cloudflare_ips {
-	#		import serve_files
-	#	}
-	#	error 403
-	#}
+	import main_headers
 
 	handle {
 		import serve_files
 	}
-
-    import serve_errors
-}
-
-https://{{ assets_name }} {
-	import common_config
-	import tls_config
-
-    import asset_headers
-
-    @asset_paths {
-        path /assets/* /errors/*
-    }
-
-	handle @asset_paths {
-		import serve_files
-	}
-
-    handle {
-        respond "Nothing to see here, go see my mate!" 404
-    }
 
     import serve_errors
 }

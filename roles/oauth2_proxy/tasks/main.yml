@@ -1,0 +1,74 @@
+---
+- name: Download OAuth2 Proxy release
+  get_url:
+    url: "https://github.com/oauth2-proxy/oauth2-proxy/releases/download/v7.5.1/oauth2-proxy-v7.5.1.linux-amd64.tar.gz"
+    dest: /tmp/oauth2-proxy.tar.gz
+    mode: '0644'
+
+- name: Create OAuth2 Proxy directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /opt/oauth2-proxy
+    - /opt/oauth2-proxy/bin
+    - /etc/oauth2-proxy
+
+- name: Extract OAuth2 Proxy binary
+  unarchive:
+    src: /tmp/oauth2-proxy.tar.gz
+    dest: /tmp
+    remote_src: yes
+
+- name: Install OAuth2 Proxy binary
+  copy:
+    src: "/tmp/oauth2-proxy-v7.5.1.linux-amd64/oauth2-proxy"
+    dest: /opt/oauth2-proxy/bin/
+    mode: '0755'
+    remote_src: yes
+
+- name: Create OAuth2 Proxy system user
+  user:
+    name: oauth2-proxy
+    system: yes
+    shell: /usr/sbin/nologin
+    home: /opt/oauth2-proxy
+
+- name: Configure OAuth2 Proxy
+  template:
+    src: oauth2-proxy.cfg.j2
+    dest: /etc/oauth2-proxy/oauth2-proxy.cfg
+    mode: '0600'
+    owner: oauth2-proxy
+    group: oauth2-proxy
+  notify: restart oauth2-proxy
+
+- name: Install OAuth2 Proxy systemd service
+  copy:
+    dest: /etc/systemd/system/oauth2-proxy.service
+    content: |
+      [Unit]
+      Description=OAuth2 Proxy
+      After=network.target
+
+      [Service]
+      User=oauth2-proxy
+      Group=oauth2-proxy
+      ExecStart=/opt/oauth2-proxy/bin/oauth2-proxy --config=/etc/oauth2-proxy/oauth2-proxy.cfg
+      Restart=always
+      RestartSec=5
+      MemoryHigh=128M
+      MemoryMax=256M
+
+      [Install]
+      WantedBy=multi-user.target
+    mode: '0644'
+  notify: restart oauth2-proxy
+
+- name: Enable and start OAuth2 Proxy
+  systemd:
+    name: oauth2-proxy
+    state: started
+    enabled: yes
+    daemon_reload: yes

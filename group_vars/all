@@ -1,13 +1,7 @@
 # group_vars/all
 ---
-# The proxy on linode and the backend for cloudflare
 linode_domain: "{{ lookup('env', 'LINODE_DOMAIN') }}"
 instance_name: "plannies-mate.{{ linode_domain }}"
-assets_name: "plannies-assets.{{ linode_domain }}"
-
-# the website with Cloudflare access for login control
-cloudflare_domain: "{{ lookup('env', 'CLOUDFLARE_DOMAIN') }}"
-cloudflare_hostname: "plannies-mate.{{ cloudflare_domain }}"
 
 proxy_password: "{{ lookup('file', playbook_dir + '/.ports') | regex_search('PROXY_PASSWORD=(\\S+)','\\1') | first }}"
 ssh_port: "{{ lookup('file', playbook_dir + '/.ports') | regex_search('SSH_PORT=(\\d+)','\\1') | first }}"
@@ -15,6 +9,8 @@ proxy_port: "{{ lookup('file', playbook_dir + '/.ports') | regex_search('PROXY_P
 
 github_client_id: "{{ lookup('env', 'GITHUB_CLIENT_ID') }}"
 github_client_secret: "{{ lookup('env', 'GITHUB_CLIENT_SECRET') }}"
+github_org: "{{ lookup('env', 'GITHUB_ORG') }}"
+github_users: "{{ lookup('env', 'GITHUB_USERS') }}"
 
 ubuntu_pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"
 

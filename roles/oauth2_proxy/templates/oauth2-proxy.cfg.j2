@@ -1,0 +1,28 @@
+# OAuth2 Proxy Config File
+http_address="127.0.0.1:4180"
+cookie_secret="{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+cookie_secure=true
+cookie_domains=[".{{ linode_domain }}"]
+cookie_expire="24h"
+cookie_refresh="1h"
+cookie_name="_oauth2_proxy"
+
+# GitHub provider
+provider="github"
+client_id="{{ github_client_id }}"
+client_secret="{{ github_client_secret }}"
+scope="user:email"
+
+# Upstream configuration
+upstreams=["http://127.0.0.1:88"]
+
+github_org="{{ github_org }}"
+github_users="{{ github_users }}"
+
+# Email domains to allow
+email_domains=["*"]  # Adjust based on your needs
+
+# Request header configuration
+pass_basic_auth=false
+pass_user_headers=true
+set_xauthrequest=true
