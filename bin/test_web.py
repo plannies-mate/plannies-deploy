@@ -11,6 +11,24 @@ def get_linode_domain():
         sys.exit(1)
     return domain
 
+def validate_github_oauth_url(r):
+    """Validate GitHub OAuth start URL parameters"""
+    if r.status_code != 302:
+        return False
+    location = r.headers.get('Location', '')
+    test_results = [
+            location.startswith('https://github.com/login/oauth/authorize'),
+            'approval_prompt=force' in location,
+            'client_id=' in location,
+            'redirect_uri=' in location,
+            'response_type=code' in location,
+            'scope=user%3Aemail' in location,
+            'state=' in location
+        ]
+    if not all(test_results):
+        print(f"Results should all be True: {test_results}")
+    return all(test_results)
+
 def test_web():
     linode_domain = get_linode_domain()
     host = f"plannies-mate.{linode_domain}"
@@ -24,7 +42,8 @@ def test_web():
         ("HTTPS Working", f"https://{host}/",
          lambda r: r.status_code == 200 and "Plannies Mate" in r.text),
         ("Robots.txt", f"https://{host}/robots.txt",
-         lambda r: r.status_code == 200 and "Disallow: /" in r.text)
+         lambda r: r.status_code == 200 and "Disallow: /" in r.text),
+        ("OAuth Start URL", f"https://{host}/oauth2/start", lambda r: validate_github_oauth_url(r))
     ]
 
     for test_name, url, validator in web_tests:
@@ -45,20 +64,13 @@ def test_web():
         ("Ping Check", "/ping", 200, None),
         ("Ready Check", "/ready", 200, None),
         ("Sign In Page", "/oauth2/sign_in", 200, "Sign in with GitHub"),
+        ("Sign Out", "/oauth2/sign_out", 302, None),  # Should redirect to home page
         ("Metrics", "/metrics", 403, "Sign in with GitHub"),
         ("Start OAuth", "/oauth2/start", 302, None),
         ("Auth Check", "/oauth2/auth", 401, "Unauthorized"),
         ("User Info", "/oauth2/userinfo", 401, "Unauthorized"),
         ("Static CSS", "/oauth2/static/css/bulma.min.css", 200, None)
     ]
-
-    # TODO:
-    # test ("Sign Out Page", "/oauth2/sign_out", 200, "Sign in with GitHub"),
-    # redirects to home page!
-
-    # TODO:
-    # /oauth2/start - a URL that will redirect to start the OAuth cycle (On github)
-    # https://github.com/login/oauth/authorize?approval_prompt=force&client_id=Ov23liOPfUQYFMIvKDa9&redirect_uri=https%3A%2F%2Fplannies-mate.psst.link%2Foauth2%2Fcallback&response_type=code&scope=read%3Auser&state=J_AOElia8yPI-P4mk9gppC_cm2G7f8L2lcAsnli9pfw%3A%2F
 
     for test_name, path, expected_code, expected_content in oauth_tests:
         try:

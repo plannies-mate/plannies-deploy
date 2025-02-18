@@ -15,8 +15,8 @@ email_domains=["*"]  # Adjust based on your needs
 provider="github"
 client_id="{{ github_client_id }}"
 client_secret="{{ github_client_secret }}"
-scope="read:user"
-# OR "user:email"
+scope="user:email"
+# Fails with 404 on documentation_url on callback "read:user"
 
 # login session
 cookie_secret="{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
