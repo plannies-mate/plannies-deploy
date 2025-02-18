@@ -37,35 +37,14 @@ def test_proxy():
     }
 
     print(f"Testing proxy: {proxy_host}:{proxy_port}")
-
     test_results = []
 
-    # First test auth failures
+    # Auth failure tests
     auth_tests = [
         ("No Auth", None, None),
         ("Wrong Password", "morph", "wrongpass"),
         ("Wrong Username", "wronguser", proxy_pass),
     ]
-
-    # Add web server tests
-    web_tests = [
-        ("HTTP Redirect", f"http://{proxy_host}/", lambda r: r.status_code in [301, 308] and r.headers['Location'].startswith('https://')),
-        ("HTTPS Working", f"https://{proxy_host}/", lambda r: r.status_code == 200),
-        ("Robots.txt", f"https://{proxy_host}/robots.txt", lambda r: r.status_code == 200 and "Disallow: /" in r.text)
-    ]
-
-    for test_name, url, validator in web_tests:
-        try:
-            print(f"  Testing {test_name} with a GET request of: {url}")
-            r = requests.get(url, verify=True, timeout=5, allow_redirects=False)
-            success = validator(r)
-            if not success:
-                print(f"  Status: {r.status_code}")
-                print(f"  Headers: {r.headers}")
-                print(f"  Body text: {r.text}")
-            test_results.append(f"Web {test_name}: {'PASS' if success else 'FAIL'}")
-        except Exception as e:
-            test_results.append(f"Web {test_name}: FAIL - Error {str(e)}")
 
     for test_name, username, password in auth_tests:
         try:
@@ -86,6 +65,7 @@ def test_proxy():
         except Exception as e:
             test_results.append(f"Auth {test_name}: FAIL - Unexpected error: {str(e)}")
 
+    # Proxy functionality tests
     tests = [
         ("HTTP Basic", "http://httpbin.org/get"),
         ("HTTPS", "https://httpbin.org/get"),
@@ -126,6 +106,6 @@ if __name__ == "__main__":
             failed += 1
 
     if failed:
-        print(f"\n{failed} tests FAILED")
+        print(f"\n{failed} proxy tests FAILED")
     else:
-        print("\nAll tests PASSED")
+        print("\nAll proxy tests PASSED")

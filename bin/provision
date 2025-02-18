@@ -55,7 +55,8 @@ update_cmd() {
             echo "Sleeping 10 seconds ..." &&
             sleep 10 &&
             status_cmd &&
-            bin/test_proxy 
+            bin/test_proxy &&
+            bin/test_web
         fi
     fi
 }

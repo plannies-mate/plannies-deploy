@@ -144,7 +144,7 @@ Fail fast with message if missing where required for processing:
 
 ## Testing System
 
-Use `bin/test_proxy`
+Use `bin/test_proxy` and `bin/test_web`
 
 1. Proxy Tests
     - Authentication validation
