@@ -28,6 +28,8 @@ cookie_name="_oauth2_proxy"
 
 # Upstream configuration
 upstreams=["http://localhost:81/"]
+pass_host_header=true
+pass_authorization_header=true
 
 # Upstream Request header configuration
 pass_basic_auth=false
