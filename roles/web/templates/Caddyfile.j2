@@ -71,15 +71,13 @@
 
 {{ instance_name }} {
 	import common_config
-
 	import main_headers
 
     @protected_paths {
         path /authorities* /oauth2* /repos* /whats_that* /ping /ready /metrics
     }
-
     handle @protected_paths {
-        reverse_proxy localhost:8080
+        reverse_proxy :8080
     }
 
 	handle {
@@ -89,9 +87,8 @@
     import serve_errors
 }
 
-http://localhost:81 {
+:81 {
 	import common_config
-
 	import main_headers
 
 	handle {
