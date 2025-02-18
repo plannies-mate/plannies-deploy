@@ -21,10 +21,16 @@ Note: README.md is for setup and usage by the Developer
    - Protected by fail2ban
 
 3. Web Server (Caddy)
-   - HTTPS with HTTP redirects
+   - HTTPS with HTTP redirects Port 80
    - Serves /var/www/html content
-   - Shows under-construction.html for missing pages
+   - Serves unprotected content on http://localhost:81
+   - Reverse proxies to port 8080 for protected paths
+   - Shows default.html for missing pages
    - robots.txt limiting indexing
+
+4. Authentication Reverse Proxy (OAuth2-Proxy)
+   - HTTP on localhost:8080
+   - Uses http://localhost:81 as upstream
 
 ## Environment
 

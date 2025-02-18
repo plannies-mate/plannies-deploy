@@ -44,6 +44,17 @@
     group: oauth2-proxy
   notify: restart oauth2-proxy
 
+
+- name: Create OAuth2 log directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: oauth2-proxy
+    group: oauth2-proxy
+    mode: '0755'
+  loop:
+    - /var/log/oauth2-proxy
+
 - name: Install OAuth2 Proxy systemd service
   copy:
     dest: /etc/systemd/system/oauth2-proxy.service

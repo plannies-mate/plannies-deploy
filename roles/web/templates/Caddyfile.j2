@@ -79,7 +79,7 @@
     }
 
     handle @protected_paths {
-        reverse_proxy localhost:4180
+        reverse_proxy localhost:8080
     }
 
 	handle {
@@ -89,7 +89,7 @@
     import serve_errors
 }
 
-http://127.0.0.1:88 {
+http://localhost:81 {
 	import common_config
 
 	import main_headers
