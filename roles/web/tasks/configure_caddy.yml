@@ -1,0 +1,14 @@
+#
+---
+
+- name: Configure Caddy
+  template:
+    src: Caddyfile.j2
+    dest: /etc/caddy/Caddyfile
+    owner: caddy
+    group: caddy
+    mode: '0644'
+  tags:
+    - 'website'
+    - 'users'
+  notify: restart caddy

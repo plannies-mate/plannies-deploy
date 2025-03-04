@@ -1,0 +1,20 @@
+# roles/optimize/tasks/optimize-security.yml
+---
+- name: Remove unnecessary daemons
+  apt:
+    name:
+      - bolt  # thunderbolt management
+      - modemmanager  # cellular modem management
+      - open-vm-tools  # VMware tools (assuming this is on Linode)
+      - packagekit  # package management daemon
+      - policykit-1
+    state: absent
+    purge: true
+    autoremove: true
+  register: pkg_removal
+
+- name: Clean apt cache
+  apt:
+    autoclean: true
+    clean: true
+  when: pkg_removal.changed

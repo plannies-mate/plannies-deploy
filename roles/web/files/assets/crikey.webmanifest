@@ -1,0 +1,19 @@
+{
+    "name": "Crikey! What's That?",
+    "short_name": "Crikey!",
+    "icons": [
+        {
+            "src": "/assets/images/crikey-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/assets/images/crikey-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "theme_color": "#00843D",
+    "background_color": "#ffffff",
+    "display": "standalone"
+}

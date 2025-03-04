@@ -1,0 +1,133 @@
+# roles/web/tasks/install_caddy.yml
+---
+- name: Install required packages
+  apt:
+    name:
+      - apache2-utils
+      - apt-transport-https
+      - curl
+      - debian-keyring
+      - debian-archive-keyring
+      - git
+      - gnupg
+      - golang-go
+    state: present
+
+- name: Download xcaddy GPG key
+  ansible.builtin.get_url:
+    url: https://dl.cloudsmith.io/public/caddy/xcaddy/gpg.key
+    dest: /tmp/caddy-xcaddy.key
+    mode: '0644'
+
+- name: Install xcaddy GPG key
+  ansible.builtin.shell:
+    cmd: cat /tmp/caddy-xcaddy.key | gpg --dearmor --yes --batch > /usr/share/keyrings/caddy-xcaddy-archive-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/caddy-xcaddy-archive-keyring.gpg
+
+- name: Add xcaddy repository
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/caddy-xcaddy.list
+    content: |
+      deb [signed-by=/usr/share/keyrings/caddy-xcaddy-archive-keyring.gpg] https://dl.cloudsmith.io/public/caddy/xcaddy/deb/debian any-version main
+    mode: '0644'
+
+- name: Install xcaddy
+  apt:
+    name: xcaddy
+    state: present
+    update_cache: yes
+
+- name: Build Caddy
+  ansible.builtin.command:
+    cmd: xcaddy build
+    chdir: /tmp
+  register: build_output
+  changed_when: true
+
+- name: Install Caddy binary
+  copy:
+    src: /tmp/caddy
+    dest: /usr/local/bin/caddy
+    mode: '0755'
+    remote_src: yes
+
+- name: Remove build only dependencies
+  apt:
+    name:
+      - golang-go
+      - git
+      - xcaddy
+    state: absent
+    purge: true
+    autoremove: true
+
+- name: Create caddy system user
+  user:
+    name: caddy
+    system: yes
+    shell: /usr/sbin/nologin
+    home: /var/lib/caddy
+    create_home: yes
+
+- name: Create Caddy directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: caddy
+    group: caddy
+    mode: '0755'
+  loop:
+    - /etc/caddy
+    - /var/www/html
+    - /var/www/html/repos
+    - /var/www/html/authorities
+    - /var/log/caddy
+
+- name: Set directory ownership
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: caddy
+    group: caddy
+    recurse: yes
+  loop:
+    - /etc/caddy
+    - /var/www/html
+    - /var/log/caddy
+    - /var/lib/caddy
+
+- name: Install Caddy systemd service
+  copy:
+    dest: /etc/systemd/system/caddy.service
+    content: |
+      [Unit]
+      Description=Caddy web server
+      Documentation=https://caddyserver.com/docs/
+      After=network.target network-online.target
+      Requires=network-online.target
+
+      [Service]
+      User=caddy
+      Group=caddy
+      ExecStart=/usr/local/bin/caddy run --environ --config /etc/caddy/Caddyfile
+      ExecReload=/usr/local/bin/caddy reload --config /etc/caddy/Caddyfile
+      TimeoutStopSec=5s
+      LimitNOFILE=1048576
+      LimitNPROC=512
+      PrivateTmp=true
+      ProtectSystem=full
+      AmbientCapabilities=CAP_NET_BIND_SERVICE
+      EnvironmentFile=-/etc/default/caddy
+
+      [Install]
+      WantedBy=multi-user.target
+    mode: '0644'
+
+- name: Enable and start Caddy
+  tags: 'website'
+  systemd:
+    name: caddy
+    state: started
+    enabled: yes
+    daemon_reload: yes

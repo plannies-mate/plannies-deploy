@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+import os
+import sys
+from pathlib import Path
+import subprocess
+import shutil
+
+def needs_rebuild(src_file, dst_file, template_file=None):
+    """Check if dst_file needs rebuilding based on source timestamps"""
+    if not dst_file.exists():
+        return True
+
+    dst_mtime = dst_file.stat().st_mtime
+    if src_file.stat().st_mtime > dst_mtime:
+        return True
+
+    if template_file and template_file.stat().st_mtime > dst_mtime:
+        return True
+
+    return False
+
+def main():
+    # Find project root
+    project_root = Path(__file__).parent.parent
+
+    # Setup paths
+    files_dir = project_root / 'roles' / 'web' / 'files'
+    contents_dir = files_dir / 'contents'
+    templates_dir = files_dir / 'templates'
+    build_dir = project_root / 'tmp' / 'build'
+    default_template = templates_dir / 'default.html'
+
+    # Create build directory
+    build_dir.mkdir(parents=True, exist_ok=True)
+
+    # Process all content files
+    for content_file in contents_dir.rglob('*.html'):
+        # Determine output path
+        rel_path = content_file.relative_to(contents_dir)
+        output_file = build_dir / rel_path
+
+        if needs_rebuild(content_file, output_file, default_template):
+            print(f"Building: {rel_path}")
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+
+            # Run add_theme
+            result = subprocess.run([
+                project_root / 'bin' / 'add_theme',
+                '-o', str(output_file.parent),
+                str(content_file)
+            ])
+
+            if result.returncode != 0:
+                print(f"Error building {rel_path}")
+                return 1
+
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main())

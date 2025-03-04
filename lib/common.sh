@@ -12,9 +12,14 @@ ensure_linode_token() {
     fi
 }
 
-ensure_linode_domain() {
+ensure_all_env_variabls() {
+    ensure_linode_token
     if [ -z "$LINODE_DOMAIN" ]; then
         echo "Error: LINODE_DOMAIN environment variable not set"
+        exit 1
+    fi
+    if [ -z "$CLOUDFLARE_DOMAIN" ]; then
+        echo "Error: CLOUDFLARE_DOMAIN environment variable not set"
         exit 1
     fi
 }
@@ -75,13 +80,10 @@ generate_ports() {
     SSH_PORT=$(shuf -i 40000-45000 -n 1)
     PROXY_PORT=$(shuf -i 45001-50000 -n 1)
     PROXY_PASSWORD=$(openssl rand -base64 24 | tr '+/' '-_' | tr -d '=')
-    # Generate a secure JWT key - 32 bytes base64 encoded
-    JWT_SHARED_KEY=$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '=')
 
     echo "SSH_PORT=$SSH_PORT" > "$PORTS_FILE"
     echo "PROXY_PORT=$PROXY_PORT" >> "$PORTS_FILE"
     echo "PROXY_PASSWORD=$PROXY_PASSWORD" >> "$PORTS_FILE"
-    echo "JWT_SHARED_KEY=$JWT_SHARED_KEY" >> "$PORTS_FILE"
 }
 
 load_ports() {

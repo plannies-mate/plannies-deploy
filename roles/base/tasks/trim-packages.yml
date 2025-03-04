@@ -1,0 +1,46 @@
+# Stage 1: Remove packages that don't have complex dependencies
+- name: Remove basic unnecessary packages
+  apt:
+    name:
+      - man-db
+      - manpages
+      - manpages-dev
+      - thermald
+      - hdparm
+      - wireless-regdb
+      - bpfcc-tools
+    state: absent
+    purge: true
+    autoremove: true
+  register: pkg_removal_1
+
+# Stage 2: Remove X11 related packages
+- name: Remove X11 related packages
+  apt:
+    name:
+      - xauth
+      - fonts-dejavu-core
+      - fonts-dejavu-mono
+    state: absent
+    purge: true
+    autoremove: true
+  register: pkg_removal_2
+
+# Stage 3: Remove system services carefully
+- name: Remove system services
+  apt:
+    name:
+      - snapd
+      - udisks2
+      - fwupd
+    state: absent
+    purge: true
+    autoremove: true
+  register: pkg_removal_3
+
+# Clean up at the end
+- name: Clean apt cache
+  apt:
+    autoclean: true
+    clean: true
+  when: pkg_removal_1.changed or pkg_removal_2.changed or pkg_removal_3.changed

@@ -1,6 +1,9 @@
 # My ports
 /.ports
 
+# passwords for web site
+/files/users.passwd
+
 # Example files
 !/.envrc.example
 
@@ -31,6 +34,7 @@
 /test/tmp/
 /test/version_tmp/
 /tmp/
+,*
 
 # Used by direnv and dotenv library to load environment variables.
 .env*

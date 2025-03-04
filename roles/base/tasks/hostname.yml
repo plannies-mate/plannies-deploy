@@ -1,0 +1,6 @@
+---
+# Just so shell prompt reminds us where we are
+- name: Set a hostname
+  tags: 'hostname'
+  ansible.builtin.hostname:
+    name: plannies-mate

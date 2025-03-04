@@ -1,0 +1,50 @@
+# OAuth2 Proxy Config File
+http_address = "http://127.0.0.1:8080"
+
+# Who access us and what can they ask us to do
+reverse_proxy = true
+whitelist_domains = "plannies-mate.psst.link"
+
+# Who can login
+github_org = "{{ github_org }}"
+github_users = "{{ github_users }}"
+# Any email that matches above
+email_domains = ["*"]  # Adjust based on your needs
+
+# GitHub provider
+provider = "github"
+client_id = "{{ github_client_id }}"
+client_secret = "{{ github_client_secret }}"
+scope = "user:email"
+# Fails with 404 on documentation_url on callback "read:user"
+
+# login session
+cookie_secret = "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+cookie_secure = true
+cookie_domains = [".{{ linode_domain }}"]
+cookie_expire = "24h"
+cookie_refresh = "1h"
+cookie_name = "_oauth2_proxy"
+
+# Upstream configuration
+upstreams = [
+    "http://127.0.0.1:81/"
+]
+pass_authorization_header = false
+pass_host_header = false
+
+# Upstream Request header configuration
+pass_basic_auth = false
+pass_user_headers = true
+set_xauthrequest = true
+
+# Log whats happening
+logging_filename = "/var/log/oauth2-proxy/access.log"
+errors_to_info_log = true
+logging_compress = true
+logging_max_size = 100
+logging_max_age = 7
+logging_local_time = true
+auth_logging = true
+standard_logging = true
+request_logging = true

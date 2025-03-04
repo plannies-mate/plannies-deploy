@@ -1,0 +1,4 @@
+---
+- import_tasks: optimize-memory.yml
+- import_tasks: optimize-disk.yml
+- import_tasks: optimize-security.yml

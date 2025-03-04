@@ -50,18 +50,21 @@ obscure_cmd() {
 }
 
 update_cmd() {
-    run_playbook update "$@" &&
-      echo "Sleeping 10 seconds ..." &&
-      sleep 10 &&
-      status_cmd &&
-      bin/test_proxy 
+    if run_playbook update "$@" ; then
+        if [ -z "$NO_TEST" ]; then
+            echo "Sleeping 10 seconds ..." &&
+            sleep 10 &&
+            status_cmd &&
+            bin/test_proxy &&
+            bin/test_web
+        fi
+    fi
 }
 
 run_playbook() {
     playbook="$1"
     shift
-    ensure_linode_token
-    ensure_linode_domain
+    ensure_all_env_variabls
 
     extra_args=''
     if [ -n "$BOOT" ]; then

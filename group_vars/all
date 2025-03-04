@@ -6,12 +6,15 @@ instance_name: "plannies-mate.{{ linode_domain }}"
 proxy_password: "{{ lookup('file', playbook_dir + '/.ports') | regex_search('PROXY_PASSWORD=(\\S+)','\\1') | first }}"
 ssh_port: "{{ lookup('file', playbook_dir + '/.ports') | regex_search('SSH_PORT=(\\d+)','\\1') | first }}"
 proxy_port: "{{ lookup('file', playbook_dir + '/.ports') | regex_search('PROXY_PORT=(\\d+)','\\1') | first }}"
-jwt_shared_key: "{{ lookup('file', playbook_dir + '/.ports') | regex_search('JWT_SHARED_KEY=(\\S+)','\\1') | first }}"
 
 github_client_id: "{{ lookup('env', 'GITHUB_CLIENT_ID') }}"
 github_client_secret: "{{ lookup('env', 'GITHUB_CLIENT_SECRET') }}"
+github_org: "{{ lookup('env', 'GITHUB_ORG') }}"
+github_users: "{{ lookup('env', 'GITHUB_USERS') }}"
 
 ubuntu_pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"
+
+user_passwords: "{{ lookup('file', playbook_dir + '/files/users.passwd') }}"
 
 dns_token: "{{ lookup('env', 'LINODE_API_TOKEN') }}"
 dns_provider: "linode"

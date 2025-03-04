@@ -1,0 +1,191 @@
+/* Theme colors and decorative elements */
+:root {
+    --primary-color: #00843D; /* Aussie green */
+    --secondary-color: #FFCD00; /* Aussie gold */
+    --text-color: #333333;
+    --background-color: #F5F5F5;
+    --card-background: #FFFFFF;
+    --border-color: #E0E0E0;
+    --error-color: #FF4444;
+    --success-color: #00C851;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: var(--text-color);
+    background-color: var(--background-color);
+}
+
+/* Hero section styling */
+.hero {
+    background-color: var(--primary-color);
+    color: white;
+    position: relative;
+    padding: 2rem 0;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.hero::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('https://images.unsplash.com/photo-1523482580672-f109ba8cb9be');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.7;
+    z-index: 0;
+    mix-blend-mode: multiply;
+}
+
+.hero .container {
+    position: relative;
+    z-index: 1;
+}
+
+.profile-image {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 1.5rem;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid var(--secondary-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Card styling */
+.project-card {
+    background: var(--card-background);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.project-icon {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+/* Button styling */
+.button {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.button:hover {
+    background-color: #006B31;
+}
+
+.button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #ccc;
+}
+
+/* Social links */
+.social-link {
+    color: var(--text-color);
+    font-size: 1.5rem;
+    transition: color 0.3s ease;
+}
+
+.social-link:hover {
+    color: var(--primary-color);
+}
+
+/* Drop zone styling */
+.drop-zone {
+    border: 3px dashed var(--border-color);
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.drop-zone.dragging {
+    border-color: var(--primary-color);
+    background: rgba(0, 132, 61, 0.05);
+}
+
+/* Error messages */
+.error {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    background: rgba(255, 0, 0, 0.1);
+    border: 1px solid rgba(255, 0, 0, 0.2);
+    color: var(--error-color);
+}
+
+.error i {
+    margin-right: 0.5rem;
+}
+
+/* Loading state */
+.loading {
+    text-align: center;
+    padding: 1rem;
+    color: var(--primary-color);
+}
+
+.loading i {
+    margin-right: 0.5rem;
+}
+
+/* Stats display */
+.stats {
+    margin-top: 1rem;
+    padding: 0.8rem;
+    border-radius: 4px;
+    background: rgba(0, 132, 61, 0.1);
+    color: var(--primary-color);
+    font-size: 0.9rem;
+}
+
+.stats p {
+    margin: 0;
+}
+
+.stats i {
+    margin-right: 0.5rem;
+}
+
+.stats.warning {
+    background: rgba(255, 152, 0, 0.1);
+    color: #f57c00;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.project-card {
+    animation: fadeIn 0.5s ease forwards;
+}

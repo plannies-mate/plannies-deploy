@@ -1,0 +1,58 @@
+#!/bin/bash
+
+action="$1"
+username="$2"
+
+PASSWD_FILE="files/users.passwd"
+
+[ -f "$PASSWD_FILE" ] || touch "$PASSWD_FILE"
+
+sync_passwds() {
+    list
+    echo
+    read -p "Press [Enter] to push changes to website (control-C to abort): " ans
+    NO_TEST=1 TAGS=users bin/provision update
+}
+
+list() {
+    echo
+    echo "Users with passwords:"
+    echo
+    cut -d' ' -f1 "$PASSWD_FILE" | tr -d '"'
+}
+
+case "$action" in
+add)
+    if [ -z "$username" ]; then
+        echo "Usage: $0 add <username>"
+        exit 1
+    fi
+    echo "Enter password for $username:"
+    hash=$(caddy hash-password | tr -d '\n')
+    if [ -n "$hash" ] ; then
+        sed -i "/^"'"'"$username"'"'" /d" "$PASSWD_FILE"
+        echo "\"$username\" \"$hash\"" >> "$PASSWD_FILE"
+        sort -u "$PASSWD_FILE" -o "$PASSWD_FILE"
+        sync_passwds
+    else
+        echo "Aborted! No hashed password!"
+    fi
+    ;;
+delete)
+    if [ -z "$username" ]; then
+        echo "Usage: $0 delete <username>"
+        exit 1
+    fi
+    sync_passwds
+    ;;
+list)
+    list
+    ;;
+sync)
+    sync_passwds
+    ;;
+*)
+    echo "Usage: $0 {add|delete|list|sync} [username]"
+    exit 1
+    ;;
+esac

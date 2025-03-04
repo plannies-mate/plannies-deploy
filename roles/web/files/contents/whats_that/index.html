@@ -1,0 +1,59 @@
+<body>
+<div class="hero">
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-magnifying-glass-chart"></i> Crikey, What's That?</h1>
+            <p class="subtitle">Drop me a URL and I'll take a squizz at which scraper you need</p>
+        </header>
+    </div>
+</div>
+
+<main class="container">
+    <section>
+        <div class="analyzer-container">
+            <div class="input-section">
+                <div class="input-row">
+                    <div class="url-input-group">
+                        <label for="urlInput">URL to analyze:</label>
+                        <div class="flex-row">
+                            <input type="url" id="urlInput" class="url-input"
+                                   placeholder="https://planning.somecouncil.gov.au"
+                                   aria-label="Enter URL to analyze">
+                            <button id="analyzeButton" class="button">
+                                <i class="fas fa-magnifying-glass"></i> Analyze
+                            </button>
+                        </div>
+                    </div>
+                    <button id="toggleSourceButton" class="button-secondary">
+                        <i class="fas fa-code"></i> I have HTML source to chuck on the BBQ!
+                    </button>
+                </div>
+
+                <div id="contentArea">
+                    <div id="analyzer" class="drop-zone"
+                         role="button" tabindex="0"
+                         aria-label="Drop zone for URL or HTML content">
+                        <div class="drop-message">
+                            <i class="fas fa-cloud-upload-alt fa-2x"></i>
+                            <p>G'day! Chuck your URL here or paste it in</p>
+                        </div>
+                    </div>
+
+                    <div class="source-input-group" style="display: none;">
+                            <textarea id="sourceInput"
+                                      placeholder="Paste the page HTML source here..."
+                                      aria-label="Paste HTML source code"></textarea>
+                        <button id="analyzeSourceButton" class="button">
+                            <i class="fas fa-code"></i> Take a squizz at this
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="results" class="results-container"></div>
+        </div>
+    </section>
+</main>
+
+<script type="module" src="js/analyzer/index.js"></script>
+<script src="js/version.js"></script>

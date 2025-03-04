@@ -22,4 +22,4 @@ case "$1" in
     ;;
 esac
 
-exec ssh -p "$SSH_PORT" "$remote_user@$HOST" "$@"
+exec ssh -o ServerAliveInterval=60 -p "$SSH_PORT" "$remote_user@$HOST" "$@"

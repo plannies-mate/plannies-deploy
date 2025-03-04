@@ -1,6 +1,8 @@
 ---
+- import_tasks: trim-packages.yml
 - import_tasks: pro.yml
 - import_tasks: packages.yml
 - import_tasks: users.yml
 - import_tasks: swap.yml
 - import_tasks: unattended_updates.yml
+- import_tasks: hostname.yml

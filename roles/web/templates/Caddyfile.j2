@@ -1,67 +1,41 @@
 {
-    # Global options
-    admin off
-    debug
-    order authenticate before respond
-    order authorize before basicauth
+	admin off
+	debug
 
-    log {
-        output file /var/log/caddy/access.log {
-            roll_size 10mb
-            roll_keep 10
-            roll_keep_for 168h
-        }
-        format console
-        level DEBUG
-    }
-
-    # Security configuration
-    security {
-        oauth identity provider github {
-            realm github
-            driver github
-            client_id "{{ github_client_id }}"
-            client_secret "{{ github_client_secret }}"
-            scopes user:email read:org
-        }
-
-        authentication portal myportal {
-            enable identity provider github
-            crypto default token lifetime 3600
-            crypto key sign-verify "{{ jwt_shared_key }}"
-            cookie domain {{ instance_name }}
-            cookie insecure off
-            cookie samesite lax
-            
-            ui {
-                links {
-                    "My Identity" "/whoami" icon "las la-user"
-                }
-            }
-
-            transform user {
-                match realm github
-                match org plannies-mate
-                action set role authp/user
-            }
-        }
-
-        authorization policy restricted {
-            set auth url https://{{ instance_name }}/oauth2/github
-            crypto key verify "{{ jwt_shared_key }}"
-            allow roles authp/user
-            validate bearer header
-            inject headers with claims
-            deny unauthorized any
-        }
-    }
+	log {
+		output file /var/log/caddy/access.log {
+			roll_size 10mb
+			roll_keep 10
+			roll_keep_for 168h
+		}
+		format console
+		level INFO
+	}
 }
 
-{{ instance_name }} {
-    # Base config
-    encode gzip
-    
-    # Security headers
+(serve_files) {
+    # default files are served until analysis is deployed with index files
+	try_files {path} {path}.html {path}/index.html {path}.default.html {path}/default.html
+	file_server
+}
+
+(serve_errors) {
+	handle_errors {
+		@custom_err file /errors/{err.status_code}.html /errors/error.html
+		handle @custom_err {
+			rewrite * {file_match.relative}
+			file_server
+		}
+		respond "{err.status_code} {err.status_text}"
+	}
+}
+
+(common_config) {
+	root * /var/www/html
+	encode gzip
+}
+
+(main_headers) {
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
         X-Frame-Options "DENY"
@@ -69,77 +43,47 @@
         X-XSS-Protection "1; mode=block"
         Referrer-Policy "strict-origin-when-cross-origin"
         -Server
-        Content-Security-Policy "default-src 'self' https://github.com https://*.githubusercontent.com; script-src 'self' 'unsafe-inline' https://github.com; style-src 'self' 'unsafe-inline' https://github.com; img-src 'self' data: https:; frame-ancestors 'none'"
+        # Content-Security-Policy "default-src 'self' https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data:; frame-ancestors 'none'"
         Permissions-Policy "geolocation=(), midi=(), sync-xhr=(), microphone=(), camera=(), magnetometer=(), gyroscope=(), fullscreen=(self), payment=()"
     }
+}
 
-    # Authentication endpoints
-    handle /oauth2/* {
-        authenticate with myportal
-    }
-
-    # Debugging endpoint
-    handle /whoami {
-        authenticate with myportal
-        respond "{user.name} ({user.email}) - Roles: {user.roles}"
-    }
-
-    # Protected paths
-    handle /authorities/* {
-        authenticate with myportal
-        authorize with restricted
-        root * /var/www/html
-        try_files {path} {path}.html {path}/index.html {path}.default.html {path}/default.html /404.html
-        file_server
-    }
-
-    handle /repos/* {
-        authenticate with myportal
-        authorize with restricted
-        root * /var/www/html
-        try_files {path} {path}.html {path}/index.html {path}.default.html {path}/default.html /404.html
-        file_server
-    }
-
-    # Public paths
-    handle /* {
-        root * /var/www/html
-        try_files {path} {path}.html {path}/index.html {path}.default.html {path}/default.html /404.html
-        file_server
-    }
-
-    handle_errors {
-        # Authentication/Authorization errors
-        @auth_error expression `{err.status_code} in [401, 403]`
-        handle @auth_error {
-            root * /var/www/html
-            rewrite * /auth-error.html
-            file_server
-        }
-
-        # Not found
-        @not_found expression `{err.status_code} == 404`
-        handle @not_found {
-            root * /var/www/html
-            rewrite * /404.html
-            file_server
-        }
-
-        # Debug endpoint
-        @debug_error expression `{header.X-Debug} == "true"`
-        handle @debug_error {
-            respond `{
-                "status": {err.status_code},
-                "error": "{err.message}",
-                "path": "{path}"
-            }`
-        }
-
-        # Everything else
-        handle * {
-            root * /var/www/html
-            rewrite * /error.html
-            file_server
-        }
+(asset_headers) {
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
     }
 }
+
+{{ instance_name }} {
+	import common_config
+	import main_headers
+
+    @protected_paths {
+        path /authorities* /oauth2* /repos* /whats_that* /ping /ready /metrics
+    }
+    handle @protected_paths {
+        reverse_proxy localhost:8080
+    }
+
+	handle {
+		import serve_files
+	}
+
+    import serve_errors
+}
+
+:81 {
+	import common_config
+	import main_headers
+
+	handle {
+		import serve_files
+	}
+
+    import serve_errors
+}
+
+# vim: ai noet ts=4 sw=4
