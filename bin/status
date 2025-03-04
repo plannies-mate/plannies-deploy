@@ -16,7 +16,7 @@ if host "$h" >/dev/null 2>&1; then
         echo "Web: https://$h/"
         echo "Proxy: http://$h:$PROXY_PORT/"
         echo "SSH: ssh -p $SSH_PORT root@$h"
-        echo "HTTP_PROXY=http://morph:$PROXY_PASSWORD@$h:$PROXY_PORT/"
+        echo "MORPH_AUSTRALIAN_PROXY=http://morph:$PROXY_PASSWORD@$h:$PROXY_PORT/"
     else
         echo "Status: Unreachable (DNS record exists but host down)"
     fi

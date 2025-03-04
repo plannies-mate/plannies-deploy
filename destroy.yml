@@ -22,7 +22,6 @@
 - name: Destroy Proxy Instances
   hosts: localhost
   vars_files:
-  #  - host_vars/localhost
     - group_vars/all
   gather_facts: false
   tasks:
