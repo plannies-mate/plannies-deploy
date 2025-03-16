@@ -14,6 +14,9 @@ console)
   echo Console in: $PWD
   bundle exec irb "$@" 
   ;;
+rake)
+  bundle exec rake "$@"
+  ;;
 server)
   bundle exec rackup "$@"
   ;;
@@ -22,7 +25,7 @@ shell)
   bundle exec bash "$@"
   ;;
 *)
-  echo "Usage: $0 analyze|console|server|shell"
+  echo "Usage: $0 analyze|console|rake|server|shell"
   ;;
 esac
 
