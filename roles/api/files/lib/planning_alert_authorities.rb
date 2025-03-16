@@ -5,7 +5,6 @@ require 'json'
 require 'fileutils'
 require_relative '../app/helpers/application_helper'
 require_relative 'scraper_base'
-require_relative 'authority_details_fetcher'
 
 # Class to scrape authority list from PlanningAlerts website
 class PlanningAlertAuthorities

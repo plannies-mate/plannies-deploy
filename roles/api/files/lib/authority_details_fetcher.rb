@@ -12,29 +12,27 @@ class AuthorityDetailsFetcher
   include ScraperBase
 
   BASE_URL = 'https://www.planningalerts.org.au/authorities/'
-  AUTHORITIES_DIR = File.join(DATA_DIR, 'planning_alert_authorities')
+  DETAILS_DIR = File.join(DATA_DIR, 'authority_details')
 
   # Returns details for an authority
   #
   # @example:
   #   {
   #     "short_name": "banyule",
-  #     "warning": true,
-  #     "last_received": "about 3 years ago",
-  #     "week_count": 0,
-  #     "month_count": 0,
-  #     "total_count": 2055,
-  #     "added": "14 dec 2009",
-  #     "median_per_week": 7
+  #     "morph_url": "https://morph.io/planningalerts-scrapers/multiple_civica",
+  #     "github_url": "https://github.com/planningalerts-scrapers/multiple_civica",
+  #     "last_log": "0 applications found for Bayside City Council (Victoria), VIC with date from 2025-03-11\nTook 0 s to import applications from Bayside City Council (Victoria), VIC",
+  #     "app_count": 0,
+  #     "import_time": "0 s"
   #   }
   def self.details(short_name)
-    output_file = File.join(AUTHORITIES_DIR, "#{short_name}.json")
+    output_file = File.join(DETAILS_DIR, "#{short_name}.json")
     JSON.parse(File.read(output_file)) if File.size?(output_file)
   end
 
   def initialize(agent = nil)
     @agent = agent || create_agent
-    FileUtils.mkdir_p(AUTHORITIES_DIR)
+    FileUtils.mkdir_p(DETAILS_DIR)
   end
 
   def fetch(short_name)
@@ -42,9 +40,9 @@ class AuthorityDetailsFetcher
       changed = false
       raise(ArgumentError, 'Must supply short_name') if short_name.to_s.empty?
 
-      output_file = File.join(AUTHORITIES_DIR, "#{short_name}.json")
+      output_file = File.join(DETAILS_DIR, "#{short_name}.json")
       etag_file = "#{output_file}.etag"
-      url = "#{BASE_URL}#{short_name}"
+      url = "#{BASE_URL}#{short_name}/under_the_hood"
 
       page = fetch_page_with_etag(url, etag_file)
 
@@ -66,45 +64,37 @@ class AuthorityDetailsFetcher
   def parse_details(page, short_name)
     details = { short_name: short_name }
 
-    # Find the applications section
-    apps_section = page.search('section.py-12').detect do |section|
-      section.at('h2')&.text&.strip&.include?('Applications collected')
-    end
-    return details.merge('error' => 'Could not find applications section') unless apps_section
-
-    error_p = apps_section.at('p.mt-8.text-xl.text-navy')
-    if error_p&.text&.include?('something might be wrong')
-      details['warning'] = true
-      # Extract the "last received" text if present
-      last_received_match = error_p.text.match(/last new application was received ([^.]+)\./)
-      details['last_received'] = last_received_match[1]&.strip if last_received_match
-    end
-
-    # Extract counts from table
-    apps_section.search('tr').each do |row|
-      # Extract the number from the first cell
-      count_cell = row.at('td')
-      next unless count_cell
-
-      count = extract_number(count_cell.text)
-
-      # Extract the label from the second cell
-      label_cell = row.at('th')
-      next unless label_cell
-
-      label_text = extract_text(label_cell).downcase
-
-      if label_text.include?('in the last week')
-        details['week_count'] = count
-      elsif label_text.include?('in the last month')
-        details['month_count'] = count
-      elsif (added_match = label_text.match(/since ([^(]+).*when this authority was first added/))
-        details['total_count'] = count
-        details['added'] = added_match[1].strip
-      elsif label_text.include?('median') && label_text.include?('per week')
-        details['median_per_week'] = count
+    # Extract morph.io URL - look for 'Watch the scraper' link
+    page.links.each do |link|
+      if link.text.strip.include?('Watch the scraper')
+        details['morph_url'] = link.href
+      elsif link.text.strip.include?('Fork the scraper on Github')
+        details['github_url'] = link.href
       end
     end
+
+    # Extract the recent import logs
+    import_section = page.search('section#import')
+    if import_section&.any?
+      # Look for pre tag with logs
+      pre_text = (import_section.at('pre')&.text || '').to_s.strip
+      unless pre_text.empty?
+        details['last_log'] = pre_text
+
+        # Additionally extract some useful data from the log
+        if (match = pre_text.match(/(\d+) applications found/))
+          details['app_count'] = match[1].to_i
+        end
+
+        if (match = pre_text.match(/Took (\d+(\.\d+)? \w*) to import/))
+          details['import_time'] = match[1]
+        end
+      end
+    end
+
+    raise("MISSING morph_url FROM: #{details.inspect}") if details['morph_url'].to_s.empty?
+    raise("MISSING github_url FROM: #{details.inspect}") if details['github_url'].to_s.empty?
+
     details
   end
 end
