@@ -32,6 +32,12 @@ Note: README.md is for setup and usage by the Developer
    - HTTP on localhost:8080
    - Uses http://localhost:81 as upstream
 
+5. Sinatra with Puma 
+   - HTTP on localhost:4567
+   - minor dynamic content
+
+6. Periodic process
+
 ## Environment
 
 See README.md

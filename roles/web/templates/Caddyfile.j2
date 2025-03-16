@@ -62,7 +62,7 @@
 	import main_headers
 
     @protected_paths {
-        path /authorities* /oauth2* /repos* /whats_that* /ping /ready /metrics
+        path /authorities* /oauth2* /repos* /whats_that* /ping /ready /metrics /api
     }
     handle @protected_paths {
         reverse_proxy localhost:8080
