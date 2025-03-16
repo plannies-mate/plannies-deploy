@@ -26,5 +26,4 @@ iam_group_all: true
 
 provision_user: handyman
 
-linode_region: "au-mel"
-#linode_region: "ap-southeast"
+linode_region: "{{ ['au-mel','ap-southeast'] | random }}"
