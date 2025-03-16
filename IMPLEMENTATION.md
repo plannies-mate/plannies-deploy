@@ -136,11 +136,61 @@ roles/web/files/
 
 Fail fast with message if missing where required for processing:
 
-- Ruby 3.3 or newer
+- Ruby 3.2.3 (deault on Ubuntu 24.04 Noble)
 - Ansible
 - Git
 - Required gems
 - Linode API access
+
+## API Service Implementation
+
+### Architecture
+
+1. Lightweight Sinatra API
+   - JSON-only API endpoints
+   - Runs on localhost:4567
+   - Minimal gem dependencies
+   - File-based state management
+   - Protected behind OAuth2-Proxy
+
+2. State Management
+   - Uses JSON files in /var/www/api/data
+   - scrape_status.json contains:
+      - Last check timestamps
+      - Current status
+      - Pending job status
+   - trigger_scrape file for on-demand processing
+
+3. Background Processing
+   - Ruby script executed via cron
+   - Daily scheduled run at midnight
+   - Checks every 15 minutes for triggers
+   - Simple log rotation approach
+   - Stateless execution model
+
+### Integration Points
+
+1. Caddy Configuration
+   - /api endpoints proxied to OAuth2-Proxy for authentication
+   - OAuth2-Proxy proxies /api to Sinatra
+   - No direct external access
+
+2. Authentication Flow
+   - Users authenticated via OAuth2-Proxy
+   - No additional auth required for API
+   - both GET and POST endpoints protected by same OAuth flow
+
+### Resource Usage
+- Memory: ~40MB for Sinatra process
+- CPU: Low, except during analysis
+- Disk: Minimal for logs and state files
+
+### Development
+
+Run 
+* `roles/api/files/app.rb` for api server
+* `roles/api/files/bin/analyze-scrapers.rb` for periodic task
+* git ignores `roles/api/files/data`
 
 ## Testing System
 

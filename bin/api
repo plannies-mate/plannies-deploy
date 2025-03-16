@@ -1,0 +1,28 @@
+#!/bin/bash
+
+dir=roles/api/files 
+cd $dir || exec echo "ERROR: $dir/app.rb does not exist!"
+
+cmd="$1"
+shift
+case "$cmd" in
+analyze)
+  echo Analyzing in: $PWD
+  bundle exec bin/analyze-scrapers.rb "$@"
+  ;;
+console)
+  echo Console in: $PWD
+  bundle exec irb "$@" 
+  ;;
+server)
+  bundle exec rackup "$@"
+  ;;
+shell)
+  echo PWD: $PWD
+  bundle exec bash "$@"
+  ;;
+*)
+  echo "Usage: $0 analyze|console|server|shell"
+  ;;
+esac
+

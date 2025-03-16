@@ -1,6 +1,9 @@
 # My ports
 /.ports
 
+# Generated data
+/roles/api/files/data/
+
 # passwords for web site
 /files/users.passwd
 

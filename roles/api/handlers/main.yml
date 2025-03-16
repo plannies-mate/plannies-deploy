@@ -1,0 +1,5 @@
+---
+- name: restart api
+  systemd:
+    name: plannies-api
+    state: restarted

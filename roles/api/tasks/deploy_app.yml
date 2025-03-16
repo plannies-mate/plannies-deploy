@@ -1,0 +1,107 @@
+---
+- name: Create API directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: caddy
+    group: caddy
+    mode: 0755
+  loop:
+    - /var/www/api
+    - /var/www/api/app
+    - /var/www/api/bin
+    - /var/www/api/data
+    - /var/www/api/lib
+    - /var/www/api/log
+    - /var/www/api/tasks
+    - /var/www/api/vendor/bundle
+
+- name: Deploy API base files
+  copy:
+    src: "{{ role_path }}/files/{{ item }}"
+    dest: "/var/www/api/{{ item }}"
+    owner: caddy
+    group: caddy
+    mode: 0644
+  loop:
+    - Rakefile
+    - config.ru
+
+- name: Deploy Gemfile and Gemfile.lock
+  copy:
+    src: "{{ item }}"
+    dest: "/var/www/api/{{ item | basename }}"
+    owner: caddy
+    group: caddy
+    mode: 0644
+  loop:
+    - "{{ playbook_dir }}/Gemfile"
+    - "{{ playbook_dir }}/Gemfile.lock"
+
+- name: Deploy source directories
+  copy:
+    src: "{{ role_path }}/files/{{ item }}"
+    dest: "/var/www/api/"
+    owner: caddy
+    group: caddy
+    mode: 0644
+    directory_mode: 0755
+  loop:
+    - app
+    - lib
+    - tasks
+
+- name: Deploy executable bin files
+  copy:
+    src: "{{ role_path }}/files/bin/"
+    dest: "/var/www/api/bin/"
+    owner: caddy
+    group: caddy
+    mode: 0755
+    directory_mode: 0755
+
+- name: Initialize status file if it doesn't exist
+  copy:
+    content: |
+      {
+        "last_check": null,
+        "github_check": null,
+        "morph_check": null,
+        "status": "initialized",
+        "job_pending": false
+      }
+    dest: "/var/www/api/data/scrape_status.json"
+    owner: caddy
+    group: caddy
+    mode: 0644
+    force: no
+
+# Install gems using bundler in the API directory
+- name: Install gems with bundler
+  command: bundle install --deployment
+  args:
+    chdir: /var/www/api
+  register: bundle_result
+  changed_when: "'Installing' in bundle_result.stdout or 'Fetching' in bundle_result.stdout"
+  failed_when: bundle_result.rc != 0 and 'Could not find' not in bundle_result.stderr
+
+- name: Set up cron jobs for analyzer
+  cron:
+    name: "{{ item.name }}"
+    user: caddy
+    job: "{{ item.job }}"
+    minute: "{{ item.minute }}"
+    hour: "{{ item.hour }}"
+  loop:
+    - name: "Check for requested scraper runs"
+      minute: "*/15"
+      hour: "1-23"
+      job: "cd /var/www/api && bundle exec rake analyze:check_pending >> /var/www/api/log/analyze-scrapers.log 2>&1"
+    - name: "Rotate scraper logs"
+      minute: "0"
+      hour: "0"
+      job: "cd /var/www/api && bundle exec rake maintenance:rotate_logs > /var/www/api/log/rotate_logs.log 2>&1"
+    - name: "Daily scraper analysis run"
+      minute: "15"
+      hour: "0"
+      job: "cd /var/www/api && bundle exec rake analyze:run > /var/www/api/log/analyze-scrapers.log 2>&1"

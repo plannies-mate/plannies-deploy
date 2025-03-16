@@ -32,12 +32,21 @@ Note: README.md is for setup and usage by the Developer
    - HTTP on localhost:8080
    - Uses http://localhost:81 as upstream
 
-5. Sinatra with Puma 
-   - HTTP on localhost:4567
-   - minor dynamic content
+5. API Service (Sinatra)
+   - JSON API endpoints for:
+      - `/api/health` - API health status check
+      - `/api/scrape` - GET for status, POST for triggering jobs
+   - Runs on localhost:4567
+   - Protected by OAuth2-Proxy
+   - Status tracking via JSON files
+   - No database required (Keeps json files in /var/www/api/data)
 
-6. Periodic process
-
+6. Background Processing
+   - Ruby script triggered via cron
+   - Scheduled daily full run
+   - On-demand runs via trigger file
+   - Simple log rotation (keeps yesterday's log, appends to today's)
+   
 ## Environment
 
 See README.md

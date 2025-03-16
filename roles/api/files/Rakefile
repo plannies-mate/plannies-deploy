@@ -1,0 +1,13 @@
+# frozen_string_literal: true
+
+require 'bundler/setup'
+require 'rake'
+
+# Load all task definitions from app/tasks
+Dir.glob(File.join(File.dirname(__FILE__), 'tasks/**/*.rake')).each { |r| load r }
+
+# Default task shows help
+# task :default do
+#   system('rake -T')
+# end
+

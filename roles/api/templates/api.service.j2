@@ -1,0 +1,14 @@
+[Unit]
+Description=Plannies-Mate Sinatra API
+After=network.target
+
+[Service]
+User=caddy
+Group=caddy
+WorkingDirectory=/var/www/api
+ExecStart=/usr/bin/bundle exec rackup -p 4567 -o 127.0.0.1 -E production
+Restart=always
+Environment=RACK_ENV=production
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,4 @@
+---
+- import_tasks: install_deps.yml
+- import_tasks: deploy_app.yml
+- import_tasks: configure_service.yml
