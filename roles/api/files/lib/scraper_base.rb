@@ -29,9 +29,11 @@ module ScraperBase
     agent ||= @agent || create_agent
 
     headers = {}
-    # only use etag unless both its file and the data file exists and nor forcing updates
+    # only use etag when both etag and data files exists and FORCE is not set and etag file is recent
     etag = nil
-    if File.exist?(etag_file) && File.exist?(etag_file.sub(/\.etag\z/, '')) && !force?
+    week_ago = Time.now - 7 * 24 * 60 * 60
+    data_file = etag_file.sub(/\.etag\z/, '')
+    if File.exist?(etag_file) && File.exist?(data_file) && !force? && File.mtime(etag_file) > week_ago
       etag = File.read(etag_file).strip
       headers['If-None-Match'] = etag if etag && !etag.empty?
     end
@@ -41,14 +43,15 @@ module ScraperBase
       page = agent.get(url, [], nil, headers)
       took = Time.now - started
       log "DEBUG: Delaying #{(took * 2).round(3)}s for #{url}" if debug?
-      sleep(2 * took)
+      sleep(took)
 
-      if page.code == '304'
+      http_code = page.code.to_i
+      if http_code == 304
         log "NOTE: Remote content unchanged for #{url}"
-      elsif !%w[200 203].include?(page.code)
-        log "ERROR: Unaccepted response code: #{page.code} for #{url}"
+      elsif ![200, 203].include?(http_code)
+        raise("ERROR: Unaccepted response code: #{http_code} for #{url}")
       elsif page.body.empty?
-        log "ERROR: Empty response for #{url}"
+        raise("ERROR: Empty response for #{url}")
       else
         # Store the new ETag for future requests if its changed
         if page.header['etag'] && page.header['etag'].strip != etag
@@ -58,12 +61,6 @@ module ScraperBase
 
         page
       end
-    rescue Mechanize::ResponseCodeError => e
-      raise e unless e.response_code == '304'
-
-      # This shouldn't happen due to the documented behavior but just in case
-      log "ERROR: Unaccepted response code #{e.response_code} for #{url}"
-      nil
     end
   end
 

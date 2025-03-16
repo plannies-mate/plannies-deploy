@@ -87,7 +87,7 @@ class Analyzer
     begin
       # Check PlanningAlerts authorities
       log 'Checking PlanningAlerts authorities...'
-      planning_alerts_status = PlanningAlertAuthorities.new.fetch_and_process
+      planning_alerts_status = PlanningAlertAuthorities.new.fetch
       
       # Check GitHub repositories
       log 'Checking GitHub repositories...'
