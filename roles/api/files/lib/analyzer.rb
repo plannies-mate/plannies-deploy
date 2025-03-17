@@ -4,18 +4,18 @@ require 'json'
 require 'fileutils'
 require 'time'
 require_relative '../app/helpers/status_helper'
-require_relative 'planning_alert_authorities'
+require_relative 'authorities_fetcher'
 
 # Analyse Scraper Details from various sites
 class Analyzer
   include StatusHelper
   
-  DATA_DIR = File.join(File.dirname(__FILE__), '../data')
-  STATUS_FILE = File.join(DATA_DIR, 'scrape_status.json')
-  TRIGGER_FILE = File.join(DATA_DIR, 'trigger_scrape')
+  data_dir = File.join(File.dirname(__FILE__), '../data')
+  STATUS_FILE = File.join(data_dir, 'scrape_status.json')
+  TRIGGER_FILE = File.join(data_dir, 'trigger_scrape')
 
   def initialize
-    FileUtils.mkdir_p(DATA_DIR)
+    FileUtils.mkdir_p(data_dir)
   end
 
   def run(options = {})
@@ -85,9 +85,9 @@ class Analyzer
     })
 
     begin
-      # Check PlanningAlerts authorities
-      log 'Checking PlanningAlerts authorities...'
-      planning_alerts_status = PlanningAlertAuthorities.new.fetch
+      # Check PlanningAlerts all
+      log 'Checking PlanningAlerts all...'
+      planning_alerts_status = AuthoritiesFetcher.new.fetch
       
       # Check GitHub repositories
       log 'Checking GitHub repositories...'

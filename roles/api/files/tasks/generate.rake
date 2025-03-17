@@ -4,11 +4,11 @@ require 'fileutils'
 require 'json'
 require 'slim'
 require 'tilt'
-require_relative '../lib/page_generator'
+require_relative '../lib/site_generator'
 
-namespace :site do
+namespace :generate do
   desc 'Generate static site from data'
-  task :generate do
+  task all: :singleton do
     generator = SiteGenerator.new
     generator.process
   end

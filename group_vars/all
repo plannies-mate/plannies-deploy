@@ -27,3 +27,8 @@ iam_group_all: true
 provision_user: handyman
 
 linode_region: "{{ ['au-mel','ap-southeast'] | random }}"
+
+web_static_assets:
+  - favicon.ico
+  - robots.txt
+  - assets

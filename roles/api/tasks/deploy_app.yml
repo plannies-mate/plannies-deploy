@@ -10,11 +10,11 @@
     - /var/www/api
     - /var/www/api/app
     - /var/www/api/bin
-    - /var/www/api/data
     - /var/www/api/lib
     - /var/www/api/log
     - /var/www/api/tasks
     - /var/www/api/vendor/bundle
+    - /var/www/html/data
 
 - name: Deploy API base files
   copy:
@@ -96,7 +96,7 @@
     - name: "Check for requested scraper runs"
       minute: "*/15"
       hour: "1-23"
-      job: "cd /var/www/api && bundle exec rake analyze:check_pending >> /var/www/api/log/analyze-scrapers.log 2>&1"
+      job: "cd /var/www/api && bundle exec rake roundup:check >> /var/www/api/log/roundup.log 2>&1"
     - name: "Rotate scraper logs"
       minute: "0"
       hour: "0"
@@ -104,4 +104,4 @@
     - name: "Daily scraper analysis run"
       minute: "15"
       hour: "0"
-      job: "cd /var/www/api && bundle exec rake analyze:run > /var/www/api/log/analyze-scrapers.log 2>&1"
+      job: "cd /var/www/api && bundle exec rake roundup:run > /var/www/api/log/roundup.log 2>&1"

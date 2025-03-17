@@ -12,7 +12,7 @@ analyze)
   ;;
 console)
   echo Console in: $PWD
-  bundle exec irb "$@" 
+  bundle exec bin/console "$@"
   ;;
 rake)
   bundle exec rake "$@"

@@ -25,7 +25,7 @@ roles/web/files/
 │   ├── authorities/
 │   ├── repos/
 │   └── whats_that/
-├── templates/      # Theme templates
+├── layouts/      # Theme layouts
 │   └── default.html
 ├── favicon.ico     # Direct copy files
 └── robots.txt
@@ -36,7 +36,7 @@ roles/web/files/
         - Reads content from
             - roles/web/files/contents/
             - ../plannies-mate/log/contents/
-        - Applies template from roles/web/files/templates/
+        - Applies layout from roles/web/files/layouts/
         - Outputs to tmp/build/ maintaining directory structure
 
 3. Web Root Structure (/var/www/html):
@@ -52,13 +52,13 @@ roles/web/files/
 ### Content Management
 
 1. Theme System
-    - Templates support substitution of:
+    - layouts support substitution of:
         - {{TITLE}} and {{CONTENT}} from contents file
         - {{FAVICON}} and {{SECTION}} for whats_that or default
         - {{LAST_CHECKED}} which indicates the freshness of the plannies-mate contents file
           or time deployed for the other contents
     - Theme applied during build, not runtime
-    - Default template provides standard header/footer
+    - Default layout provides standard header/footer
     - Error pages follow same theming
 
 2. Content Updates
@@ -126,7 +126,7 @@ roles/web/files/
     - Cleans up DNS record
 
 3. Content Deployment
-    - build_theme processes content with templates
+    - build_theme processes content with layouts
     - Ansible deploys:
         - System configuration
         - Static assets directly
@@ -136,7 +136,7 @@ roles/web/files/
 
 Fail fast with message if missing where required for processing:
 
-- Ruby 3.2.3 (deault on Ubuntu 24.04 Noble)
+- Ruby 3.2.3 (default on Ubuntu 24.04 Noble)
 - Ansible
 - Git
 - Required gems

@@ -11,15 +11,12 @@ class SiteGenerator
   TEMPLATE_DIR = File.expand_path('templates', __dir__)
 
   def initialize
-    @@output_dir = site_dir
+    @output_dir = site_dir
     FileUtils.mkdir_p(@output_dir)
   end
 
   def generate_site
     puts "Generating static site in #{@output_dir}..."
-
-    # Load data
-    authorities = load_authorities
 
     # Generate index page
     generate_index(authorities)
@@ -32,47 +29,25 @@ class SiteGenerator
     # Copy assets in production mode (in dev they're symlinked)
     copy_assets if @env == 'production'
 
-    puts "Static site generation complete!"
+    puts 'Static site generation complete!'
   end
 
   private
 
-  def load_authorities
-    main_file = File.join(DATA_DIR, 'planning_alert_authorities.json')
-    return [] unless File.exist?(main_file)
-
-    authorities = JSON.parse(File.read(main_file))
-
-    # Enhance authorities with details and stats
-    authorities.map do |authority|
-      short_name = authority['short_name']
-
-      # Load stats if available
-      stats_file = File.join(DATA_DIR, 'authority_stats', "#{short_name}.json")
-      if File.exist?(stats_file)
-        authority['stats'] = JSON.parse(File.read(stats_file))
-      end
-
-      # Load technical details if available
-      details_file = File.join(DATA_DIR, 'authority_details', "#{short_name}.json")
-      if File.exist?(details_file)
-        authority['details'] = JSON.parse(File.read(details_file))
-      end
-
-      authority
-    end
+  def authorities
+    @authorities ||= Authority.all
   end
 
   def generate_index(authorities)
     template = File.join(TEMPLATE_DIR, 'index.slim')
     output_file = File.join(@output_dir, 'index.html')
 
-    render_template(template, output_file, authorities: authorities, env: @env)
+    render_template(template, output_file, all: authorities, env: @env)
   end
 
   def generate_authority_page(authority)
     template = File.join(TEMPLATE_DIR, 'authority.slim')
-    @output_dir = File.join(@output_dir, 'authorities')
+    @output_dir = File.join(@output_dir, 'all')
     FileUtils.mkdir_p(@output_dir)
 
     output_file = File.join(@output_dir, "#{authority['short_name']}.html")

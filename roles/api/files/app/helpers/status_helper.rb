@@ -6,12 +6,29 @@ require_relative 'application_helper'
 module StatusHelper
   include ApplicationHelper
 
-  STATUS_FILE = File.join(DATA_DIR, 'scrape_status.json')
-  TRIGGER_FILE = File.join(DATA_DIR, 'trigger_scrape')
+  def roundup_request_file
+    File.join(data_dir, 'roundup_request.dat')
+  end
+
+  def roundup_requested?
+    File.exist?(roundup_request_file)
+  end
+
+  def roundup_requested=(value)
+    if value
+      File.write(roundup_request_file, Time.now.to_s)
+    else
+      FileUtils.rm_f(roundup_request_file)
+    end
+  end
+
+  def roundup_status_file
+    File.join(data_dir, 'roundup_status.json')
+  end
 
   def load_status
-    if File.size?(STATUS_FILE)
-      JSON.parse(File.read(STATUS_FILE))
+    if File.size?(roundup_status_file)
+      JSON.parse(File.read(roundup_status_file))
     else
       default_status('missing')
     end
@@ -22,25 +39,19 @@ module StatusHelper
 
   def default_status(status = 'unknown')
     {
-      'last_check' => nil,
-      'github_check' => nil,
-      'morph_check' => nil,
-      'status' => status,
-      'job_pending' => false
+      'last_roundup' => nil,
+      'status' => status
     }
   end
 
   def update_status(status_update)
-    status = load_status
-    status.merge!(status_update)
-
-    File.write(STATUS_FILE, JSON.pretty_generate(status))
+    save_status(load_status.merge(status_update))
   end
 
   def save_status(status)
-    FileUtils.mkdir_p(DATA_DIR)
+    FileUtils.mkdir_p(data_dir)
 
-    File.write(STATUS_FILE, JSON.pretty_generate(status))
+    File.write(roundup_status_file, JSON.pretty_generate(status))
   end
 
   # Helper for human-readable time differences

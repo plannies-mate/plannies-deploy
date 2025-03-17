@@ -2,8 +2,6 @@
 
 # Application wide Helper methods and CONSTANTS
 module ApplicationHelper
-  DATA_DIR = File.expand_path('../../data', __dir__)
-
   def log(message)
     puts "#{Time.now.strftime('%Y-%m-%d %H:%M:%S')} - #{message}"
   end
@@ -18,5 +16,9 @@ module ApplicationHelper
 
   def site_dir
     production? ? '/var/www/html' : File.expand_path('../../../../../tmp/html', __dir__)
+  end
+
+  def data_dir
+    File.join(site_dir, 'data')
   end
 end

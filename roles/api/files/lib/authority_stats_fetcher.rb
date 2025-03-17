@@ -12,7 +12,10 @@ class AuthorityStatsFetcher
   include ScraperBase
 
   BASE_URL = 'https://www.planningalerts.org.au/authorities/'
-  STATS_DIR = File.join(DATA_DIR, 'authority_stats')
+
+  def stats_dir
+    File.join(data_dir, 'authority_stats')
+  end
 
   # Returns stats for an authority
   #
@@ -28,13 +31,13 @@ class AuthorityStatsFetcher
   #     "median_per_week": 7
   #   }
   def self.stats(short_name)
-    output_file = File.join(STATS_DIR, "#{short_name}.json")
+    output_file = File.join(stats_dir, "#{short_name}.json")
     JSON.parse(File.read(output_file)) if File.size?(output_file)
   end
 
   def initialize(agent = nil)
     @agent = agent || create_agent
-    FileUtils.mkdir_p(STATS_DIR)
+    FileUtils.mkdir_p(stats_dir)
   end
 
   def fetch(short_name)
@@ -42,7 +45,7 @@ class AuthorityStatsFetcher
       changed = false
       raise(ArgumentError, 'Must supply short_name') if short_name.to_s.empty?
 
-      output_file = File.join(STATS_DIR, "#{short_name}.json")
+      output_file = File.join(stats_dir, "#{short_name}.json")
       etag_file = "#{output_file}.etag"
       url = "#{BASE_URL}#{short_name}"
 

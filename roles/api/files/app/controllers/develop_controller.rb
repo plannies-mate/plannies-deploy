@@ -20,7 +20,7 @@ class DevelopController < ApplicationController
 
     json(
       env: ENV['RACK_ENV'],
-      status_file: STATUS_FILE,
+      roundup_status_file: STATUS_FILE,
       trigger_file: TRIGGER_FILE,
       trigger_exists: File.exist?(TRIGGER_FILE),
       status: load_status
@@ -71,8 +71,8 @@ class DevelopController < ApplicationController
     method_routes['GET'] << '/whats_that/'
     method_routes['GET'] << '/whats_that/index.html'
     layout('API Endpoints') do
-      get_template(method_routes['GET']) +
-        post_template(method_routes['POST'])
+      get_list_entry(method_routes['GET']) +
+        post_list_entry(method_routes['POST'])
     end
   end
 
@@ -89,7 +89,7 @@ class DevelopController < ApplicationController
     end
   end
 
-  def get_template(get_paths)
+  def get_list_entry(get_paths)
     get_li = '<li><span class="endpoint get-endpoint">'
     end_li = '</span></li>'
     get_list = get_paths.map { |path| "#{get_li}<a href=\"#{path}\">#{path}</a>#{end_li}" }
@@ -102,7 +102,7 @@ class DevelopController < ApplicationController
     HTML
   end
 
-  def post_template(post_paths)
+  def post_list_entry(post_paths)
     post_li = '<li><span class="endpoint post-endpoint">'
     end_li = '</span></li>'
     post_list = post_paths.map do |path|

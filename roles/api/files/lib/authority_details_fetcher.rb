@@ -12,9 +12,12 @@ class AuthorityDetailsFetcher
   include ScraperBase
 
   BASE_URL = 'https://www.planningalerts.org.au/authorities/'
-  DETAILS_DIR = File.join(DATA_DIR, 'authority_details')
 
-  # Returns details for an authority
+  def details_dir 
+    File.join(data_dir, 'authority_details')
+  end
+
+  # Returns find for an authority
   #
   # @example:
   #   {
@@ -25,22 +28,22 @@ class AuthorityDetailsFetcher
   #     "app_count": 0,
   #     "import_time": "0 s"
   #   }
-  def self.details(short_name)
-    output_file = File.join(DETAILS_DIR, "#{short_name}.json")
+  def self.find(short_name)
+    output_file = File.join(details_dir, "#{short_name}.json")
     JSON.parse(File.read(output_file)) if File.size?(output_file)
   end
 
   def initialize(agent = nil)
     @agent = agent || create_agent
-    FileUtils.mkdir_p(DETAILS_DIR)
+    FileUtils.mkdir_p(details_dir)
   end
 
   def fetch(short_name)
-    with_error_handling('authority details fetching') do
+    with_error_handling('authority find fetching') do
       changed = false
       raise(ArgumentError, 'Must supply short_name') if short_name.to_s.empty?
 
-      output_file = File.join(DETAILS_DIR, "#{short_name}.json")
+      output_file = File.join(details_dir, "#{short_name}.json")
       etag_file = "#{output_file}.etag"
       url = "#{BASE_URL}#{short_name}/under_the_hood"
 
@@ -53,7 +56,7 @@ class AuthorityDetailsFetcher
         details = parse_details(page, short_name)
 
         atomic_write_json(details, output_file)
-        log "Successfully saved details for #{short_name}"
+        log "Successfully saved find for #{short_name}"
       end
       changed
     end

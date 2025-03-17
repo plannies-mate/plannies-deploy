@@ -81,7 +81,7 @@
     - /etc/caddy
     - /var/www/html
     - /var/www/html/repos
-    - /var/www/html/authorities
+    - /var/www/html/all
     - /var/log/caddy
 
 - name: Set directory ownership

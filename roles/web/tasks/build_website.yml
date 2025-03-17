@@ -1,6 +1,14 @@
-#
 ---
-- name: Copy static website files
+- name: Ensure local html directory exists
+  file:
+    path: "{{ playbook_dir }}/tmp/html/"
+    state: directory
+    mode: '0755'
+  delegate_to: localhost
+  become: false
+  tags: 'website'
+
+- name: Copy static website files to remote server
   copy:
     src: "{{ role_path }}/files/{{ item }}"
     dest: "/var/www/html/"
@@ -9,10 +17,18 @@
     mode: '0644'
     directory_mode: '0755'
   tags: 'website'
-  loop:
-    - favicon.ico
-    - robots.txt
-    - assets
+  loop: "{{ web_static_assets }}"
+
+- name: Copy static website files to local html directory
+  copy:
+    src: "{{ role_path }}/files/{{ item }}"
+    dest: "{{ playbook_dir }}/tmp/html/"
+    mode: '0644'
+    directory_mode: '0755'
+  delegate_to: localhost
+  become: false
+  tags: 'website'
+  loop: "{{ web_static_assets }}"
 
 - name: Build themed files
   command: bin/build_theme
@@ -22,7 +38,7 @@
   become: false
   changed_when: "'Generated' in build_result.stdout"
 
-- name: Copy built website files
+- name: Copy built website files to remote server
   copy:
     src: "{{ playbook_dir }}/tmp/build/"
     dest: /var/www/html/
@@ -30,6 +46,18 @@
     group: caddy
     mode: '0644'
     directory_mode: '0755'
+  tags:
+    - 'website'
+    - 'themed'
+
+- name: Copy built website files to local html directory
+  copy:
+    src: "{{ playbook_dir }}/tmp/build/"
+    dest: "{{ playbook_dir }}/tmp/html/"
+    mode: '0644'
+    directory_mode: '0755'
+  delegate_to: localhost
+  become: false
   tags:
     - 'website'
     - 'themed'

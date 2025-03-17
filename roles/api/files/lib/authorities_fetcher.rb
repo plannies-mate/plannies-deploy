@@ -7,22 +7,34 @@ require_relative '../app/helpers/application_helper'
 require_relative 'scraper_base'
 
 # Class to scrape authority list from PlanningAlerts website
-class PlanningAlertAuthorities
+class AuthoritiesFetcher
   include ApplicationHelper
   include ScraperBase
 
   AUTHORITIES_URL = 'https://www.planningalerts.org.au/authorities'
-  OUTPUT_FILE = File.join(DATA_DIR, 'planning_alert_authorities.json')
-  TEMP_OUTPUT_FILE = "#{OUTPUT_FILE}.new".freeze
-  ETAG_FILE = "#{OUTPUT_FILE}.etag".freeze
-  AUTHORITIES_DIR = File.join(DATA_DIR, 'planning_alert_authorities')
 
-  # Return the list of authorities from main planning alerts page
-  def self.authorities
-    JSON.parse(File.read(OUTPUT_FILE)) if File.size?(OUTPUT_FILE)
+  def output_file
+    File.join(data_dir, 'authorities.json')
   end
 
-  # Return the details of an authority
+  def temp_output_file
+    "#{output_file}.new".freeze
+  end
+
+  def etag_file
+    "#{output_file}.etag".freeze
+  end
+
+  def authorities_dir
+    File.join(data_dir, 'authorities')
+  end
+
+  # Return the list of all authorities from main planning alerts page
+  def self.all
+    JSON.parse(File.read(output_file)) if File.size?(output_file)
+  end
+
+  # Return the find of an authority
   #
   # @example:
   #     {
@@ -34,12 +46,12 @@ class PlanningAlertAuthorities
   #       "population": 56093
   #     }
   def self.authority(short_name)
-    authorities&.find { |a| a['short_name'] == short_name }
+    all&.find { |a| a['short_name'] == short_name }
   end
 
   def initialize
     @agent = create_agent
-    FileUtils.mkdir_p(AUTHORITIES_DIR)
+    FileUtils.mkdir_p(authorities_dir)
   end
 
   def fetch
@@ -47,17 +59,17 @@ class PlanningAlertAuthorities
     with_error_handling('authority list fetching') do
       log "Fetching authority data from #{AUTHORITIES_URL}"
 
-      page = fetch_page_with_etag(AUTHORITIES_URL, ETAG_FILE)
+      page = fetch_page_with_etag(AUTHORITIES_URL, etag_file)
 
       if page.nil?
-        raise 'No cached data available and no new content received' unless File.exist?(OUTPUT_FILE)
+        raise 'No cached data available and no new content received' unless File.exist?(output_file)
       else
         changed = true
         authorities = parse_authorities(page)
 
         # Save to temporary file first to ensure atomic operation
-        atomic_write_json(authorities, OUTPUT_FILE)
-        log "Successfully saved #{authorities.size} authorities"
+        atomic_write_json(authorities, output_file)
+        log "Successfully saved #{authorities.size} all"
       end
       changed
     end

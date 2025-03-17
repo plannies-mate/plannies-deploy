@@ -8,7 +8,7 @@ export const RELEVANCE_CATEGORIES = {
 
 // Common words to filter out
 const commonWords = new Set(['a', 'an', 'the', 'scraper', 'scrapers', 'scrapes', 'scrape',
-    'council', 'multiple', 'authorities', 'with', 'using', 'that', 'have', 'system', 'and',
+    'council', 'multiple', 'all', 'with', 'using', 'that', 'have', 'system', 'and',
     'or', 'in', 'on', 'at', 'to', 'for', 'of']);
 
 // Text preprocessing - apply this exact same process to everything
