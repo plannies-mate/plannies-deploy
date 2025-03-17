@@ -27,7 +27,9 @@ def main():
     files_dir = project_root / 'roles' / 'web' / 'files'
     contents_dir = files_dir / 'contents'
     templates_dir = files_dir / 'templates'
+    assets_dir = files_dir / 'assets'
     build_dir = project_root / 'tmp' / 'build'
+    html_dir = project_root / 'tmp' / 'html'
     default_template = templates_dir / 'default.html'
 
     # Create build directory
@@ -38,10 +40,12 @@ def main():
         # Determine output path
         rel_path = content_file.relative_to(contents_dir)
         output_file = build_dir / rel_path
+        output_file2 = html_dir / rel_path
 
         if needs_rebuild(content_file, output_file, default_template):
             print(f"Building: {rel_path}")
             output_file.parent.mkdir(parents=True, exist_ok=True)
+            output_file2.parent.mkdir(parents=True, exist_ok=True)
 
             # Run add_theme
             result = subprocess.run([
@@ -53,6 +57,10 @@ def main():
             if result.returncode != 0:
                 print(f"Error building {rel_path}")
                 return 1
+            
+            os.link(str(output_file), str(output_file2))
+            print(f"Hard linked: {output_file} to {output_file2}")
+
 
     return 0
 

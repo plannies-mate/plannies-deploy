@@ -18,3 +18,14 @@ ROUTES = [
 ROUTES.each do |route|
   map(route[:path]) { run route[:controller] }
 end
+
+class AppEnv
+  include ApplicationHelper
+end
+
+# configure :development do
+app_env = AppEnv.new
+set :public_folder, app_env.site_dir
+
+enable :static
+# end

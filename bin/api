@@ -18,6 +18,12 @@ rake)
   bundle exec rake "$@"
   ;;
 server)
+  mkdir -p ../../../tmp/html
+  (
+  cd ../..
+  ln -nfs $PWD/web/files/{robots.txt,assets,favicon.ico}  ../tmp/html
+  ln -nfs $PWD/web/files/contents/{errors,whats_that}  ../tmp/html
+  )      
   bundle exec rackup "$@"
   ;;
 shell)
