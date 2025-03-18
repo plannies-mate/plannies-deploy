@@ -26,7 +26,7 @@ main.container
                   == slim :'partials/_authority_row', locals: { authority: authority }
         
         .section-footer
-          p Total: #{scraper.authorities.size} authorities using this scraper
+          p Total: #{scraper.authorities.size} authorities using this scraper, #{summarize_authorities scraper.authorities}
     
     // Custom (Single Authority) Scrapers
     h3
@@ -44,7 +44,8 @@ main.container
             - authority = scraper.authorities.first
             tr
               td
-                a href="/scrapers/#{scraper.name}" #{scraper.name}
+                a href="/scrapers/#{scraper.name}"
+                  == add_word_breaks CGI::escape_html(scraper.name)
               == slim :'partials/_authority_row', locals: { authority: authority }
     
     // Orphaned Scrapers
@@ -64,7 +65,8 @@ main.container
             - orphaned_scrapers.each do |scraper|
               tr
                 td
-                  a href="/scrapers/#{scraper.name}" #{scraper.name}
+                  a href="/scrapers/#{scraper.name}"
+                    == add_word_breaks add_word_breaks(scraper.name)
                 td
                   a href="#{scraper.morph_url}" target="_blank" #{scraper.morph_url}
                 td

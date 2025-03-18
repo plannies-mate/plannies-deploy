@@ -36,8 +36,8 @@ module GeneratorBase
     context = ViewContext.new(views_dir)
 
     # Render the template with the layout
-    template = Slim::Template.new(template_path)
-    layout = Slim::Template.new(layout_path)
+    template = Slim::Template.new(template_path, pretty: true)
+    layout = Slim::Template.new(layout_path, pretty: true)
 
     content = template.render(context, locals)
     output = layout.render(context, locals) { content }
@@ -56,5 +56,26 @@ module GeneratorBase
       return this_path if File.exist?(this_path)
     end
     path
+  end
+
+  # frozen_string_literal: true
+
+  # Helper methods for string formatting in views
+  module StringHelper
+    # Add word break opportunities (<wbr>) after specified punctuation
+    # Particularly useful for long identifiers with underscore/hyphen separators
+    # @param str [String] the string to process
+    # @param chars [String] characters after which to insert <wbr> tags
+    # @return [String] the string with <wbr> tags inserted
+    def add_word_breaks(str, chars = '-_.')
+      return str if str.nil? || str.empty?
+
+      # Escape characters for use in regex
+      escaped_chars = Regexp.escape(chars)
+      # Insert <wbr> after each specified character
+      str.gsub(/([#{escaped_chars}])/, '\1<wbr>')
+    end
+
+
   end
 end

@@ -17,4 +17,4 @@ main.container
               == slim :'partials/_authority_row', locals: { authority: authority }
       
     .section-footer
-      p Total: #{authorities.size} authorities
+      p Total: #{authorities.size} authorities, #{summarize_authorities authorities}

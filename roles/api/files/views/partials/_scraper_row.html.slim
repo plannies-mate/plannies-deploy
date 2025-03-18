@@ -1,5 +1,6 @@
 td
-  a href="/scrapers/#{scraper.name}" #{scraper.name}
+  a href="/scrapers/#{scraper.name}"
+    == add_word_breaks CGI::escape_html(scraper.name)
 td
   a href="#{scraper.morph_url}" target="_blank"
     i.fas.fa-external-link-alt
