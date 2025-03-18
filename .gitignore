@@ -5,6 +5,7 @@
 /roles/api/files/tmp
 /roles/api/files/log
 /roles/api/files/coverage
+/roles/api/files/spec/examples.txt
 
 # passwords for web site
 /files/users.passwd
