@@ -15,9 +15,26 @@ class Authority
     @short_name = attributes['short_name'] || raise(ArgumentError, 'short_name is required')
     @name = attributes['name'] || raise(ArgumentError, 'name is required')
     @url = attributes['url'] || raise(ArgumentError, 'url is required')
+    @state = attributes['state']
     @possibly_broken = attributes['possibly_broken'] || false
     @population = attributes['population']
     @attributes = attributes
+  end
+
+  # Equal if its name, planning alerts url and state matches
+  #
+  # The other details (possibly_broken, population, details and stats) may differ
+  def ==(other)
+    short_name == other.short_name &&
+      name == other.name &&
+      url == other.url &&
+      state == other.state
+  end
+
+  alias eql? ==
+
+  def morph_scraper
+    MorphScrapersAnalyzer.instance.find(morph_url)
   end
 
   # Details hash if available
@@ -79,5 +96,4 @@ class Authority
   def [](key)
     @attributes[key] || details[key] || stats[key]
   end
-
 end

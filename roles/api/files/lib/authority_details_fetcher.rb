@@ -57,7 +57,7 @@ class AuthorityDetailsFetcher
       details = parse_details(page, short_name)
 
       self.class.atomic_write_json(details, output_file)
-      self.class.log "Successfully saved find for #{short_name}"
+      self.class.log "Successfully saved details for #{short_name}"
     end
     changed
   end

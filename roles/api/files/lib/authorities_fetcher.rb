@@ -30,17 +30,9 @@ class AuthoritiesFetcher
   end
 
   # Return the list of all authorities from main planning alerts page
-  def self.all
-    if File.size?(output_file)
-      JSON.parse(File.read(output_file))
-    else
-      []
-    end
-  end
-
-  # Return the find of an authority
   #
   # @example:
+  #   [
   #     {
   #       "state": "NSW",
   #       "name": "Albury City Council",
@@ -48,9 +40,15 @@ class AuthoritiesFetcher
   #       "short_name": "albury",
   #       "possibly_broken": true,
   #       "population": 56093
-  #     }
-  def self.authority(short_name)
-    all&.find { |a| a['short_name'] == short_name }
+  #     },
+  #     ...
+  #   ]
+  def self.all
+    if File.size?(output_file)
+      JSON.parse(File.read(output_file))
+    else
+      []
+    end
   end
 
   def initialize(agent = nil)
