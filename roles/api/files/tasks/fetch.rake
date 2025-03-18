@@ -23,6 +23,7 @@ namespace :fetch do
     authorities.each do |authority|
       fetcher.fetch(authority['short_name'])
     end
+    fetcher.remove_orphans
   end
 
   desc 'Fetch the statistics for a specific authority by short_name'

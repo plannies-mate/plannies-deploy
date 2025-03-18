@@ -11,6 +11,10 @@ class Authority
     @all ||= AuthoritiesFetcher.all.map { |a| Authority.new(a) }
   end
 
+  def self.reset!
+    @all = nil
+  end
+
   def initialize(attributes)
     @short_name = attributes['short_name'] || raise(ArgumentError, 'short_name is required')
     @name = attributes['name'] || raise(ArgumentError, 'name is required')

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require_relative '../spec_helper'
 require_relative '../../lib/analyzer'
 
 RSpec.describe Analyzer do

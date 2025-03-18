@@ -24,31 +24,35 @@ class MorphScrapersAnalyzer
   #   ...
   # ]
 
-  def initialize
-    @scrapers = {}
-    Authority.all.each do |authority|
-      add_authority authority
-    end
-  end
-
   def all
-    @scrapers.values
+    scrapers.values
   end
 
   # Find a scraper by morph_url or name
   def find(morph_url_or_name)
     name = morph_url_or_name.split('/').last
-    @scrapers.fetch(name)
+    scrapers.fetch(name)
   end
 
   private
 
-  def add_authority(authority)
-    name = authority.morph_url.split('/').last
-    if @scrapers.key?(name)
-      @scrapers[name].authorities << authority
-    else
-      @scrapers[name] = MorphScraper.new(authority)
+  def scrapers
+    return @scrapers if @scrapers
+
+    @scrapers = {}
+    Authority.all.each do |authority|
+      name = authority.morph_url.split('/').last
+      if @scrapers.key?(name)
+        @scrapers[name].authorities << authority
+      else
+        @scrapers[name] = MorphScraper.new(authority)
+      end
     end
+    @scrapers
   end
+
+  def reset!
+    @scrapers = nil
+  end
+
 end

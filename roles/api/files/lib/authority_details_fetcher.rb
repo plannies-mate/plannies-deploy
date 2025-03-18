@@ -36,9 +36,11 @@ class AuthorityDetailsFetcher
   def initialize(agent = nil)
     @agent = agent || self.class.create_agent
     FileUtils.mkdir_p(self.class.details_dir)
+    @fetched = []
   end
 
   def fetch(short_name)
+    @fetched << short_name
     changed = false
     raise(ArgumentError, 'Must supply short_name') if short_name.to_s.empty?
 
@@ -60,6 +62,16 @@ class AuthorityDetailsFetcher
       self.class.log "Successfully saved details for #{short_name}"
     end
     changed
+  end
+
+  def remove_orphans
+    Dir.glob('*.json', base: self.class.stats_dir).each do |filename|
+      short_name = File.basename(filename, '.json')
+      unless @fetched.include?(short_name)
+        FileUtils.rm_f File.join(self.class.stats_dir, filename)
+        FileUtils.rm_f File.join(self.class.stats_dir, "#{filename}.etag")
+      end
+    end
   end
 
   private

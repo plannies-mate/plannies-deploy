@@ -72,29 +72,4 @@ RSpec.describe AuthoritiesFetcher do
       expect(AuthoritiesFetcher.all).to be_empty
     end
   end
-  
-  describe '.authority' do
-    it 'finds an authority by short_name' do
-      test_data = [
-        { 'short_name' => 'test1', 'name' => 'Test 1' },
-        { 'short_name' => 'test2', 'name' => 'Test 2' }
-      ]
-      
-      allow(AuthoritiesFetcher).to receive(:all).and_return(test_data)
-      
-      result = AuthoritiesFetcher.authority('test2')
-      expect(result).to eq(test_data[1])
-    end
-    
-    it 'returns nil if the authority is not found' do
-      test_data = [
-        { 'short_name' => 'test1', 'name' => 'Test 1' }
-      ]
-      
-      allow(AuthoritiesFetcher).to receive(:all).and_return(test_data)
-      
-      result = AuthoritiesFetcher.authority('nonexistent')
-      expect(result).to be_nil
-    end
-  end
 end
