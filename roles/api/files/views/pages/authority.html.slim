@@ -1,0 +1,72 @@
+main.container
+  section.content-section
+    .section-header
+      h2
+        i.fas.fa-building
+        |  #{authority.name}
+      p.subtitle #{authority.state} Planning Authority
+    
+    .authority-details
+      .details-card
+        h3 Basic Information
+        table.details-table
+          tr
+            th Short Name
+            td #{authority.short_name}
+          tr
+            th State
+            td #{authority.state}
+          tr
+            th Population
+            td #{number_with_delimiter(authority.population) if authority.population}
+          tr
+            th Planning Alerts URL
+            td
+              a href="#{authority.url}" target="_blank" #{authority.url}
+          tr
+            th Possibly Broken
+            td #{authority.possibly_broken ? 'Yes' : 'No'}
+      
+      .details-card
+        h3 Scraper Details
+        table.details-table
+          tr
+            th Morph URL
+            td
+              a href="#{authority.morph_url}" target="_blank" #{authority.morph_url}
+          tr
+            th GitHub URL
+            td
+              a href="#{authority.github_url}" target="_blank" #{authority.github_url}
+          tr
+            th Application Count
+            td #{number_with_delimiter(authority.app_count) if authority.app_count}
+          tr
+            th Last Log
+            td
+              pre #{authority.last_log}
+      
+      .details-card
+        h3 Statistics
+        table.details-table
+          tr
+            th Warning
+            td #{authority.warning? ? 'Yes' : 'No'}
+          tr
+            th Last Received
+            td #{format_date(authority.last_received) if authority.last_received}
+          tr
+            th Applications (Last Week)
+            td #{number_with_delimiter(authority.week_count) if authority.week_count}
+          tr
+            th Applications (Last Month)
+            td #{number_with_delimiter(authority.month_count) if authority.month_count}
+          tr
+            th Total Applications
+            td #{number_with_delimiter(authority.total_count) if authority.total_count}
+          tr
+            th Added
+            td #{format_date(authority.added) if authority.added}
+          tr
+            th Median Per Week
+            td #{authority.median_per_week}

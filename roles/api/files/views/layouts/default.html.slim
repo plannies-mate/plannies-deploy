@@ -1,0 +1,56 @@
+doctype html
+html lang="en"
+  head
+    meta charset="UTF-8"
+    meta name="viewport" content="width=device-width, initial-scale=1.0"
+    title #{title} - Plannies Mate
+    link rel="apple-touch-icon" sizes="180x180" href="/assets/images/apple-touch-icon.png"
+    link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png"
+    link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png"
+    link rel="manifest" href="/assets/site.webmanifest"
+    link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    link rel="stylesheet" href="/assets/css/base.css"
+    link rel="stylesheet" href="/assets/css/theme.css"
+    link rel="stylesheet" href="/assets/css/background.css"
+    meta name="theme-color" content="#00843D"
+  
+  body
+    header.mini-hero
+      .container
+        h1
+          i.fas.fa-code
+          |  Plannies Mate
+        p.subtitle Dev My Scraper
+        nav.main-nav
+          a href="/"
+            i.fas.fa-home
+            |  Home
+          a href="/authorities/"
+            i.fas.fa-building
+            |  Authorities
+          a href="/scrapers/"
+            i.fas.fa-code-branch
+            |  Scrapers  
+          a href="/whats_that/"
+            i.fas.fa-magnifying-glass-chart
+            |  Crikey! What's That?
+
+    == yield
+    
+    footer
+      .container
+        .social-links
+          a.social-link href="https://github.com/ianheggie-oaf" title="When I am hanging out with OAF"
+            i.fab.fa-github-alt
+          a.social-link href="https://github.com/ianheggie" title="Normal work and play using GitHub"
+            i.fab.fa-github
+          a.social-link href="https://www.linkedin.com/in/ianheggie/" title="Professional networking"
+            i.fab.fa-linkedin
+        p
+          span#deployed Last updated: #{Time.now.strftime('%Y-%m-%d')}
+          |  with 
+          a.social-link href="https://www.australia.com/en" title="Come and say G'Day!"
+            i.fas.fa-heart
+          |  in Australia
+    
+    script src="/assets/js/version.js"

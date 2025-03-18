@@ -6,7 +6,6 @@ require_relative '../../lib/analyzer'
 RSpec.describe Analyzer do
   let(:analyzer) { Analyzer.new }
 
-
   after do
     FileUtils.rm_rf(described_class.data_dir)
   end

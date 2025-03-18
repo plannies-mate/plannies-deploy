@@ -6,7 +6,7 @@ require 'fileutils'
 require 'time'
 
 # Module providing common functionality for web scrapers
-# se `extend ApplicationHelper` so everything (except InstanceMethods) become class methods
+# use `extend ApplicationHelper` so everything (except InstanceMethods) become class methods
 module ScraperBase
 
   # Create a standardized Mechanize agent

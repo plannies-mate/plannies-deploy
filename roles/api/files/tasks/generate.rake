@@ -1,27 +1,33 @@
-# roles/api/files/tasks/pages.rake
+# frozen_string_literal: true
 
-require 'fileutils'
-require 'json'
-require 'slim'
-require 'tilt'
-require_relative '../lib/site_generator'
+require_relative '../lib/authorities_generator'
+require_relative '../lib/authority_generator'
+require_relative '../lib/scrapers_generator'
+require_relative '../lib/scraper_generator'
 
 namespace :generate do
-  desc 'Generate static site from data'
-  task all: :singleton do
-    generator = SiteGenerator.new
-    generator.process
+  desc 'Generate all reports'
+  task all: %i[singleton authorities authority_pages scrapers scraper_pages] do
+    puts 'All reports generated successfully'
   end
 
-  # desc 'Generate site and watch for changes (development)'
-  # task :dev do
-  #   require_relative '../site/dev_server'
-  #   DevServer.run!
-  # end
-  #
-  # desc 'Clean generated files'
-  # task :clean do
-  #   FileUtils.rm_rf(File.join(SiteGenerator::OUTPUT_DIR, '*'))
-  #   puts "Cleaned static site files"
-  # end
+  desc 'Generate authorities index page'
+  task :authorities do
+    AuthoritiesGenerator.generate
+  end
+
+  desc 'Generate individual authority pages'
+  task :authority_pages do
+    AuthorityGenerator.generate_all
+  end
+
+  desc 'Generate scrapers index page'
+  task :scrapers do
+    ScrapersGenerator.generate
+  end
+
+  desc 'Generate individual scraper pages'
+  task :scraper_pages do
+    ScraperGenerator.generate_all
+  end
 end

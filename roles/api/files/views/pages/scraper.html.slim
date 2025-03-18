@@ -1,0 +1,38 @@
+main.container
+  section.content-section
+    .section-header
+      h2
+        i.fas.fa-code-branch
+        |  #{scraper.name}
+      p.subtitle Planning Authority Scraper
+    
+    .scraper-details
+      .details-card
+        h3 Basic Information
+        table.details-table
+          tr
+            th Morph URL
+            td
+              a href="#{scraper.morph_url}" target="_blank" #{scraper.morph_url}
+          tr
+            th GitHub URL
+            td
+              a href="#{scraper.github_url}" target="_blank" #{scraper.github_url}
+          tr
+            th Authorities
+            td #{scraper.authorities.size}
+    
+    // Authorities using this scraper
+    h3 
+      i.fas.fa-building
+      |  Authorities Using This Scraper
+    
+    .table-container
+      table.data-table
+        thead
+          tr
+            == slim :'partials/_authority_header'
+        tbody
+          - scraper.authorities.sort_by { |a| [a.state, a.name.downcase] }.each do |authority|
+            tr
+              == slim :'partials/_authority_row', locals: { authority: authority }

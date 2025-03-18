@@ -1,0 +1,11 @@
+td
+  a href="/scrapers/#{scraper.name}" #{scraper.name}
+td
+  a href="#{scraper.morph_url}" target="_blank"
+    i.fas.fa-external-link-alt
+    |  Morph
+td
+  a href="#{scraper.github_url}" target="_blank"
+    i.fab.fa-github
+    |  GitHub
+td #{scraper.authorities.size}

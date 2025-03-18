@@ -17,17 +17,17 @@ There are a variety of reports I want from the system:
 
 Files generated and classes that do the generation (each called from their own task, similar to how fetchers are called)
 
-* `data_dir/scrapers/index.html` - list of scrapers with a table of the associated authorities grouped under each
-  class: `lib/generate_scrapers.rb`
+* `data_dir/scrapers.html` - list of scrapers with a table of the associated authorities grouped under each
+  class: `lib/scrapers_generator.rb`
 * `data_dir/scrapers/scraper_base_name.html` - details of scraper (currently just the github and auth links and a list of
   authorities that use the scraper)
-  class: `lib/generate_scraper.rb`
-* `data_dir/authorities/index.html` - table of authorities with scraper and detail relative links - order by authority
-  class: `lib/generate_authorities.rb`
+  class: `lib/scraper_generator.rb`
+* `data_dir/authorities.html` - table of authorities with scraper and detail relative links - order by authority
+  class: `lib/authorities_generator.rb`
 * DISCUSS if we generate different pages for different sort orders, or use a javascript plugin to sort the table (prefer
   as we will later also add filtering)
 * `data_dir/authorities/short_name.html` - detailed page for each authority listing all the details we have
-  class: `lib/generate_authority.rb`
+  class: `lib/authority_generator.rb`
 
 Repos Index is grouped by
 

@@ -1,0 +1,71 @@
+main.container
+  section.content-section
+    .section-header
+      h2
+        i.fas.fa-code-branch
+        |  Scrapers
+      p.subtitle All planning authority scrapers
+    
+    // Multi Authority Scrapers
+    h3
+      i.fas.fa-cubes
+      |  Multi-Authority Scrapers
+    
+    - multi_scrapers.each do |scraper|
+      .scraper-section
+        h4
+          a href="/scrapers/#{scraper.name}" #{scraper.name}
+        .table-container
+          table.data-table
+            thead
+              tr
+                == slim :'partials/_authority_header'
+            tbody
+              - scraper.authorities.sort_by { |a| [a.state, a.name.downcase] }.each do |authority|
+                tr
+                  == slim :'partials/_authority_row', locals: { authority: authority }
+        
+        .section-footer
+          p Total: #{scraper.authorities.size} authorities using this scraper
+    
+    // Custom (Single Authority) Scrapers
+    h3
+      i.fas.fa-cube
+      |  Custom Scrapers
+    
+    .table-container
+      table.data-table
+        thead
+          tr
+            th Scraper
+            == slim :'partials/_authority_header'
+        tbody
+          - custom_scrapers.each do |scraper|
+            - authority = scraper.authorities.first
+            tr
+              td
+                a href="/scrapers/#{scraper.name}" #{scraper.name}
+              == slim :'partials/_authority_row', locals: { authority: authority }
+    
+    // Orphaned Scrapers
+    - if orphaned_scrapers.any?
+      h3
+        i.fas.fa-question-circle
+        |  Orphaned Scrapers
+      
+      .table-container
+        table.data-table
+          thead
+            tr
+              th Scraper
+              th Morph URL
+              th GitHub URL
+          tbody
+            - orphaned_scrapers.each do |scraper|
+              tr
+                td
+                  a href="/scrapers/#{scraper.name}" #{scraper.name}
+                td
+                  a href="#{scraper.morph_url}" target="_blank" #{scraper.morph_url}
+                td
+                  a href="#{scraper.github_url}" target="_blank" #{scraper.github_url}

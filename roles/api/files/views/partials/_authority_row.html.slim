@@ -1,0 +1,17 @@
+td
+  a href="/authorities/#{authority.short_name}" #{authority.short_name}
+td #{authority.name}
+td #{authority.state}
+td #{number_with_delimiter(authority.population) if authority.population}
+td
+  - if authority.warning?
+    span.status-warning
+      i.fas.fa-exclamation-triangle
+      |  Warning
+  - else
+    span.status-ok
+      i.fas.fa-check-circle
+      |  OK
+td #{number_with_delimiter(authority.week_count) if authority.week_count}
+td #{number_with_delimiter(authority.month_count) if authority.month_count}
+td #{number_with_delimiter(authority.total_count) if authority.total_count}

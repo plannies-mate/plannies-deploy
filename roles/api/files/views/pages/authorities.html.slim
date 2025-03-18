@@ -1,0 +1,20 @@
+main.container
+  section.content-section
+    .section-header
+      h2
+        i.fas.fa-building
+        |  Authorities
+      p.subtitle All planning authorities in Australia
+    
+    .table-container
+      table.data-table
+        thead
+          tr
+            == slim :'partials/_authority_header'
+        tbody
+          - authorities.each do |authority|
+            tr
+              == slim :'partials/_authority_row', locals: { authority: authority }
+      
+    .section-footer
+      p Total: #{authorities.size} authorities
