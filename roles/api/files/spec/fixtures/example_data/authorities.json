@@ -1,0 +1,98 @@
+[
+  {
+    "state": "ACT",
+    "name": "ACT Planning & Land Authority",
+    "url": "https://www.planningalerts.org.au/authorities/act",
+    "short_name": "act",
+    "possibly_broken": false,
+    "population": 454499
+  },
+  {
+    "state": "NSW",
+    "name": "Armidale Regional Council",
+    "url": "https://www.planningalerts.org.au/authorities/armidale",
+    "short_name": "armidale",
+    "possibly_broken": false,
+    "population": 29124
+  },
+  {
+    "state": "NSW",
+    "name": "Canterbury-Bankstown Council",
+    "url": "https://www.planningalerts.org.au/authorities/bankstown",
+    "short_name": "bankstown",
+    "possibly_broken": false,
+    "population": 371006
+  },
+  {
+    "state": "NSW",
+    "name": "Bathurst Regional Council",
+    "url": "https://www.planningalerts.org.au/authorities/bathurst",
+    "short_name": "bathurst",
+    "possibly_broken": true,
+    "population": 43567
+  },
+  {
+    "state": "NSW",
+    "name": "Burwood Council",
+    "url": "https://www.planningalerts.org.au/authorities/burwood",
+    "short_name": "burwood",
+    "possibly_broken": true,
+    "population": 40217
+  },
+  {
+    "state": "QLD",
+    "name": "Burdekin Shire Council",
+    "url": "https://www.planningalerts.org.au/authorities/burdekin",
+    "short_name": "burdekin",
+    "possibly_broken": true,
+    "population": 16692
+  },
+  {
+    "state": "VIC",
+    "name": "Banyule City Council",
+    "url": "https://www.planningalerts.org.au/authorities/banyule",
+    "short_name": "banyule",
+    "possibly_broken": true,
+    "population": 126236
+  },
+  {
+    "state": "VIC",
+    "name": "Baw Baw Shire Council",
+    "url": "https://www.planningalerts.org.au/authorities/baw_baw",
+    "short_name": "baw_baw",
+    "possibly_broken": false,
+    "population": 57626
+  },
+  {
+    "state": "VIC",
+    "name": "Bayside City Council (Victoria)",
+    "url": "https://www.planningalerts.org.au/authorities/bayside_vic",
+    "short_name": "bayside_vic",
+    "possibly_broken": true,
+    "population": 101306
+  },
+  {
+    "state": "VIC",
+    "name": "Brimbank City Council",
+    "url": "https://www.planningalerts.org.au/authorities/brimbank",
+    "short_name": "brimbank",
+    "possibly_broken": false,
+    "population": 194618
+  },
+  {
+    "state": "WA",
+    "name": "City of Bunbury",
+    "url": "https://www.planningalerts.org.au/authorities/bunbury",
+    "short_name": "bunbury",
+    "possibly_broken": true,
+    "population": 32987
+  },
+  {
+    "state": "WA",
+    "name": "City of Busselton",
+    "url": "https://www.planningalerts.org.au/authorities/busselton",
+    "short_name": "busselton",
+    "possibly_broken": true,
+    "population": 40640
+  }
+]

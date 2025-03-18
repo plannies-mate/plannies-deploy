@@ -1,0 +1,8 @@
+{
+  "short_name": "bankstown",
+  "github_url": "https://github.com/planningalerts-scrapers/bankstown",
+  "morph_url": "https://morph.io/planningalerts-scrapers/bankstown",
+  "last_log": "Error 400 Bad Request while trying to save application DA-261/2025 for Canterbury-Bankstown Council, NSW. So, skipping\nError 400 Bad Request while trying to save application CC-117/2025 for Canterbury-Bankstown Council, NSW. So, skipping\n82 applications found for Canterbury-Bankstown Council, NSW with date from 2025-03-13\n2 applications errored for Canterbury-Bankstown Council, NSW with date from 2025-03-13\nTook 1 s to import applications from Canterbury-Bankstown Council, NSW",
+  "app_count": 82,
+  "import_time": "1 s"
+}
