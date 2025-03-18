@@ -1,13 +1,11 @@
 # frozen_string_literal: true
 
-require 'sinatra/contrib'
-
 require_relative 'application_controller'
 require_relative '../helpers/status_helper'
 
 # Development / debug endpoints not visible from outside
 class DevelopController < ApplicationController
-  include StatusHelper
+  extend StatusHelper
 
   # We're already using Sinatra::JSON from contrib
   register Sinatra::Contrib
@@ -17,34 +15,31 @@ class DevelopController < ApplicationController
   end
 
   get '/debug' do
-    halt 403, json(error: 'Debug endpoint disabled in production') if production?
-
+    content_type :json
     json(
       env: ENV['RACK_ENV'],
-      roundup_status_file: STATUS_FILE,
-      trigger_file: TRIGGER_FILE,
-      trigger_exists: File.exist?(TRIGGER_FILE),
-      status: load_status
+      roundup_status_file: self.class.roundup_status_file,
+      roundup_request_file: self.class.roundup_request_file,
+      roundup_request_file_exists: File.exist?(self.class.roundup_request_file),
+      status: self.class.load_status
     )
   end
 
   get '/*' do
-    puts "AAAA, #{params.inspect}"
+    # puts "AAAA, #{params.inspect}"
     # Only used in production where we want to serve through the application
     # Or for development paths not automatically mapped to static files
     path = params[:splat].first
-    file_path = File.join(site_dir, path)
+    file_path = File.join(self.class.site_dir, path)
 
-    puts "FILE_PATH: #{file_path}"
-
-    try_path = %W[#{file_path}
+    try_paths = %W[#{file_path}
                   #{file_path}.html
                   #{file_path}/index.html
                   #{file_path}.default.html
                   #{file_path}/default.html
-      ].find { |p| File.exist?(p) && !File.directory?(p) }
+    ]
+    try_path = try_paths.find { |p| File.exist?(p) && !File.directory?(p) } unless self.class.production?
     if try_path
-      puts "try_path: #{try_path}"
       set_content_type(try_path)
       send_file try_path
     else
@@ -61,7 +56,7 @@ class DevelopController < ApplicationController
     method_routes = {}
     %w[GET POST].map do |http_method|
       routes = []
-      ROUTES.each do |route|
+      Constants::ROUTES.each do |route|
         routes << route[:controller].routes[http_method]&.map do |r|
           "#{route[:path]}#{r[0]}".sub(%r{\A/+}, '/').sub(%r{(?!^)/\z}, '')
         end
@@ -78,16 +73,18 @@ class DevelopController < ApplicationController
   end
 
   def set_content_type(filename)
-    case File.extname(filename).downcase
-    when '.html' then content_type 'text/html'
-    when '.js' then content_type 'application/javascript'
-    when '.css' then content_type 'text/css'
-    when '.ico' then content_type 'image/x-icon'
-    when '.json' then content_type 'application/json'
-    when '.png' then content_type 'image/png'
-    when '.txt' then content_type 'text/plain'
-    else content_type 'application/octet-stream' # Default binary content type
-    end
+    value = case File.extname(filename).downcase
+            when '.html' then 'text/html'
+            when '.js' then 'application/javascript'
+            when '.css' then 'text/css'
+            when '.ico' then 'image/x-icon'
+            when '.json' then 'application/json'
+            when '.png' then 'image/png'
+            when '.txt' then 'text/plain'
+            else filename
+            end
+    content_type(value)
+    value
   end
 
   def get_list_entry(get_paths)

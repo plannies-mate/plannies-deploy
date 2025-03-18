@@ -8,13 +8,13 @@ require_relative 'scraper_base'
 
 # Class to fetch and parse detailed information for a single authority
 class AuthorityStatsFetcher
-  include ApplicationHelper
-  include ScraperBase
+  extend ApplicationHelper
+  extend ScraperBase
 
   BASE_URL = 'https://www.planningalerts.org.au/authorities/'
 
-  def stats_dir
-    File.join(data_dir, 'authority_stats')
+  def self.stats_dir
+    File.join(self.data_dir, 'authority_stats')
   end
 
   # Returns stats for an authority
@@ -30,38 +30,38 @@ class AuthorityStatsFetcher
   #     "added": "14 dec 2009",
   #     "median_per_week": 7
   #   }
-  def self.stats(short_name)
+  def self.find(short_name)
     output_file = File.join(stats_dir, "#{short_name}.json")
     JSON.parse(File.read(output_file)) if File.size?(output_file)
   end
 
   def initialize(agent = nil)
-    @agent = agent || create_agent
-    FileUtils.mkdir_p(stats_dir)
+    @agent = agent || self.class.create_agent
+    FileUtils.mkdir_p(self.class.stats_dir)
   end
 
   def fetch(short_name)
-    with_error_handling('authority stats fetching') do
-      changed = false
-      raise(ArgumentError, 'Must supply short_name') if short_name.to_s.empty?
+    changed = false
+    raise(ArgumentError, 'Must supply short_name') if short_name.to_s.empty?
 
-      output_file = File.join(stats_dir, "#{short_name}.json")
-      etag_file = "#{output_file}.etag"
-      url = "#{BASE_URL}#{short_name}"
+    output_file = File.join(self.class.stats_dir, "#{short_name}.json")
+    etag_file = "#{output_file}.etag"
+    url = "#{BASE_URL}#{short_name}"
 
-      page = fetch_page_with_etag(url, etag_file)
+    page = self.class.fetch_page_with_etag(url, etag_file)
 
-      if page.nil?
-        raise "No cached data available and no new content received for #{short_name}" unless File.exist?(output_file)
-      else
-        changed = true
-        stats = parse_stats(page, short_name)
-
-        atomic_write_json(stats, output_file)
-        log "Successfully saved stats for #{short_name}"
+    if page.nil?
+      unless recent_file?(output_file)
+        raise "No recent cached data available and no new content received for #{short_name}"
       end
-      changed
+    else
+      changed = true
+      stats = parse_stats(page, short_name)
+
+      self.class.atomic_write_json(stats, output_file)
+      self.class.log "Successfully saved stats for #{short_name}"
     end
+    changed
   end
 
   private
@@ -89,13 +89,13 @@ class AuthorityStatsFetcher
       count_cell = row.at('td')
       next unless count_cell
 
-      count = extract_number(count_cell.text)
+      count = self.class.extract_number(count_cell.text)
 
       # Extract the label from the second cell
       label_cell = row.at('th')
       next unless label_cell
 
-      label_text = extract_text(label_cell).downcase
+      label_text = self.class.extract_text(label_cell).downcase
 
       if label_text.include?('in the last week')
         stats['week_count'] = count

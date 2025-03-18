@@ -5,15 +5,15 @@ require_relative '../helpers/status_helper'
 
 # Analyze Controller
 class AnalyzeController < ApplicationController
-  include StatusHelper
+  extend StatusHelper
 
   get '/' do
-    status = load_status
+    status = self.class.load_status
 
     # Add extra info about how long ago checks happened
     formatted_status = status.clone
 
-    %w[last_check github_check morph_check].each do |check|
+    %w[last_roundup github_check morph_check].each do |check|
       if status[check]
         begin
           check_time = Time.parse(status[check])
@@ -27,24 +27,20 @@ class AnalyzeController < ApplicationController
       end
     end
 
+    content_type :json
     json(formatted_status)
   end
 
   # Trigger scrape endpoint
   post '/' do
-    FileUtils.mkdir_p(File.dirname(TRIGGER_FILE))
-    # Create trigger file
-    File.write(TRIGGER_FILE, Time.now.iso8601)
+    self.class.roundup_requested = true
 
     # Update status
-    status = load_status
-    status['job_pending'] = true
-    save_status(status)
-
+    self.class.update_status('roundup_requested' => true, 'status' => 'pending')
+    content_type :json
     json(
       success: true,
-      message: 'Scrape job triggered',
-      status: status
+      message: 'Roundup requested'
     )
   end
 end

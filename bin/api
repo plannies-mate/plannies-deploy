@@ -17,6 +17,9 @@ console)
 rake)
   bundle exec rake "$@"
   ;;
+rspec)
+  bundle exec rspec "$@"
+  ;;
 server)
   mkdir -p ../../../tmp/html
   (

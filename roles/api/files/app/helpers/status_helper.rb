@@ -3,6 +3,7 @@
 require_relative 'application_helper'
 
 # Helper methods and CONSTANTS
+# use `extend StatusHelper` so everything become class methods
 module StatusHelper
   include ApplicationHelper
 
@@ -26,6 +27,12 @@ module StatusHelper
     File.join(data_dir, 'roundup_status.json')
   end
 
+  # Loads current status
+  # @example:
+  #   {
+  #     'last_roundup' => 'Time in iso format',
+  #     'status' => 'terse status'
+  #   }
   def load_status
     if File.size?(roundup_status_file)
       JSON.parse(File.read(roundup_status_file))

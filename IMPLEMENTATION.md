@@ -147,47 +147,49 @@ Fail fast with message if missing where required for processing:
 ### Architecture
 
 1. Lightweight Sinatra API
-   - JSON-only API endpoints
-   - Runs on localhost:4567
-   - Minimal gem dependencies
-   - File-based state management
-   - Protected behind OAuth2-Proxy
+    - JSON-only API endpoints
+    - Runs on localhost:4567
+    - Minimal gem dependencies
+    - File-based state management
+    - Protected behind OAuth2-Proxy
 
 2. State Management
-   - Uses JSON files in /var/www/api/data
-   - scrape_status.json contains:
-      - Last check timestamps
-      - Current status
-      - Pending job status
-   - trigger_scrape file for on-demand processing
+    - Uses JSON files in /var/www/api/data
+    - scrape_status.json contains:
+        - Last check timestamps
+        - Current status
+        - Pending job status
+    - trigger_scrape file for on-demand processing
 
 3. Background Processing
-   - Ruby script executed via cron
-   - Daily scheduled run at midnight
-   - Checks every 15 minutes for triggers
-   - Simple log rotation approach
-   - Stateless execution model
+    - Ruby script executed via cron
+    - Daily scheduled run at midnight
+    - Checks every 15 minutes for triggers
+    - Simple log rotation approach
+    - Stateless execution model
 
 ### Integration Points
 
 1. Caddy Configuration
-   - /api endpoints proxied to OAuth2-Proxy for authentication
-   - OAuth2-Proxy proxies /api to Sinatra
-   - No direct external access
+    - /api endpoints proxied to OAuth2-Proxy for authentication
+    - OAuth2-Proxy proxies /api to Sinatra
+    - No direct external access
 
 2. Authentication Flow
-   - Users authenticated via OAuth2-Proxy
-   - No additional auth required for API
-   - both GET and POST endpoints protected by same OAuth flow
+    - Users authenticated via OAuth2-Proxy
+    - No additional auth required for API
+    - both GET and POST endpoints protected by same OAuth flow
 
 ### Resource Usage
+
 - Memory: ~40MB for Sinatra process
 - CPU: Low, except during analysis
 - Disk: Minimal for logs and state files
 
 ### Development
 
-Run 
+Run
+
 * `roles/api/files/app.rb` for api server
 * `roles/api/files/bin/analyze-scrapers.rb` for periodic task
 * git ignores `roles/api/files/data`
@@ -215,6 +217,7 @@ We are using Cloudflare for plannies-mate.thesite.info in front of plannies-make
 When you authenticate, don't give access to organisations.
 
 Test shows info matched against access rules:
+
 ```json
 {
   "name": null,
@@ -222,3 +225,19 @@ Test shows info matched against access rules:
   "groups": []
 }
 ```
+
+## Testing Philosophy:
+
+* Test against reality, not what we think it should be!
+    * Use VCR for external API calls instead of mocking
+    * Use real components unless there's a compelling reason to mock
+* Keep tests under 200 lines by splitting into multiple focused files
+* Use appropriately named subdirectories when splitting test files - rubymine expects `SomeClass` to be tested using
+  `some_class_spec.rb` but allows multiple files in differently named sibling directories.
+
+## Code Organization Principles:
+
+* Split large files into focused components (< 200 lines)
+* use extend with Helper Modules and `class InstanceMethods ... end` and `send :include, InstanceMethods` within the
+  helper module for those methods that require access to instance state. This unfortunately means that many helper
+  methods need to be accessed using `self.class.method_name` but we sometimes need to access them from class methods.

@@ -8,30 +8,34 @@ require_relative 'scraper_base'
 
 # Class to scrape authority list from PlanningAlerts website
 class AuthoritiesFetcher
-  include ApplicationHelper
-  include ScraperBase
+  extend ApplicationHelper
+  extend ScraperBase
 
   AUTHORITIES_URL = 'https://www.planningalerts.org.au/authorities'
 
-  def output_file
+  def self.output_file
     File.join(data_dir, 'authorities.json')
   end
 
-  def temp_output_file
+  def self.temp_output_file
     "#{output_file}.new".freeze
   end
 
-  def etag_file
+  def self.etag_file
     "#{output_file}.etag".freeze
   end
 
-  def authorities_dir
+  def self.authorities_dir
     File.join(data_dir, 'authorities')
   end
 
   # Return the list of all authorities from main planning alerts page
   def self.all
-    JSON.parse(File.read(output_file)) if File.size?(output_file)
+    if File.size?(output_file)
+      JSON.parse(File.read(output_file))
+    else
+      []
+    end
   end
 
   # Return the find of an authority
@@ -49,30 +53,30 @@ class AuthoritiesFetcher
     all&.find { |a| a['short_name'] == short_name }
   end
 
-  def initialize
-    @agent = create_agent
-    FileUtils.mkdir_p(authorities_dir)
+  def initialize(agent = nil)
+    @agent = agent || self.class.create_agent
+    FileUtils.mkdir_p(self.class.authorities_dir)
   end
 
   def fetch
     changed = false
-    with_error_handling('authority list fetching') do
-      log "Fetching authority data from #{AUTHORITIES_URL}"
+    self.class.log "Fetching authority data from #{AUTHORITIES_URL}"
 
-      page = fetch_page_with_etag(AUTHORITIES_URL, etag_file)
+    page = self.class.fetch_page_with_etag(AUTHORITIES_URL, self.class.etag_file)
 
-      if page.nil?
-        raise 'No cached data available and no new content received' unless File.exist?(output_file)
-      else
-        changed = true
-        authorities = parse_authorities(page)
-
-        # Save to temporary file first to ensure atomic operation
-        atomic_write_json(authorities, output_file)
-        log "Successfully saved #{authorities.size} all"
+    if page.nil?
+      unless self.class.recent_file?(self.class.output_file)
+        raise 'No recent cached data available and no new content received'
       end
-      changed
+    else
+      changed = true
+      authorities = parse_authorities(page)
+
+      # Save to temporary file first to ensure atomic operation
+      self.class.atomic_write_json(authorities, self.class.output_file)
+      self.class.log "Successfully saved #{authorities.size} all"
     end
+    changed
   end
 
   private
@@ -90,12 +94,12 @@ class AuthoritiesFetcher
       authority_link = authority_cell.at('a')
       next unless authority_link
 
-      record['state'] = extract_text(cells[0])
-      record['name'] = extract_text(authority_link)
+      record['state'] = self.class.extract_text(cells[0])
+      record['name'] = self.class.extract_text(authority_link)
       record['url'] = authority_link['href']
       record['short_name'] = record['url'].split('/').last
       record['possibly_broken'] = !authority_cell.at('div.bg-yellow').nil?
-      record['population'] = extract_number(cells[2].text)
+      record['population'] = self.class.extract_number(cells[2].text)
       authorities << record
     end
 

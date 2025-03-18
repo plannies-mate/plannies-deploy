@@ -8,12 +8,12 @@ require_relative 'scraper_base'
 
 # Class to fetch and parse detailed information for a single authority
 class AuthorityDetailsFetcher
-  include ApplicationHelper
-  include ScraperBase
+  extend ApplicationHelper
+  extend ScraperBase
 
   BASE_URL = 'https://www.planningalerts.org.au/authorities/'
 
-  def details_dir 
+  def self.details_dir
     File.join(data_dir, 'authority_details')
   end
 
@@ -34,32 +34,32 @@ class AuthorityDetailsFetcher
   end
 
   def initialize(agent = nil)
-    @agent = agent || create_agent
-    FileUtils.mkdir_p(details_dir)
+    @agent = agent || self.class.create_agent
+    FileUtils.mkdir_p(self.class.details_dir)
   end
 
   def fetch(short_name)
-    with_error_handling('authority find fetching') do
-      changed = false
-      raise(ArgumentError, 'Must supply short_name') if short_name.to_s.empty?
+    changed = false
+    raise(ArgumentError, 'Must supply short_name') if short_name.to_s.empty?
 
-      output_file = File.join(details_dir, "#{short_name}.json")
-      etag_file = "#{output_file}.etag"
-      url = "#{BASE_URL}#{short_name}/under_the_hood"
+    output_file = File.join(self.class.details_dir, "#{short_name}.json")
+    etag_file = "#{output_file}.etag"
+    url = "#{BASE_URL}#{short_name}/under_the_hood"
 
-      page = fetch_page_with_etag(url, etag_file)
+    page = self.class.fetch_page_with_etag(url, etag_file)
 
-      if page.nil?
-        raise "No cached data available and no new content received for #{short_name}" unless File.exist?(output_file)
-      else
-        changed = true
-        details = parse_details(page, short_name)
-
-        atomic_write_json(details, output_file)
-        log "Successfully saved find for #{short_name}"
+    if page.nil?
+      unless self.class.recent_file?(output_file)
+        raise "No recent cached data available and no new content received for #{short_name}"
       end
-      changed
+    else
+      changed = true
+      details = parse_details(page, short_name)
+
+      self.class.atomic_write_json(details, output_file)
+      self.class.log "Successfully saved find for #{short_name}"
     end
+    changed
   end
 
   private

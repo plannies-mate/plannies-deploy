@@ -6,7 +6,7 @@ require 'fileutils'
 
 # Generate pages to be served statically
 class SiteGenerator
-  include ApplicationHelper
+  extend ApplicationHelper
 
   TEMPLATE_DIR = File.expand_path('templates', __dir__)
 

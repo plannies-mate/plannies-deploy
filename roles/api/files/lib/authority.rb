@@ -1,27 +1,33 @@
 # frozen_string_literal: true
 
-# Authority details collected from various sources
+# Authority details collected from various sources, uniquely identified by short_name
+#
+# * Lazy load details and/or stats when needed
+# * Relies on Fetcher classes being called to populate the json files
 class Authority
-  attr_reader :id, :short_name, :full_name, :url
+  attr_reader :short_name, :name, :url, :state, :possibly_broken, :population
 
   def self.all
-    @all ||= AuthoritiesFetcher.all.map_with_index { |a, id| Authority.new(a.merge(id: id)) }
+    @all ||= AuthoritiesFetcher.all.map { |a| Authority.new(a) }
   end
 
   def initialize(attributes)
-    @id = attributes['id']
     @short_name = attributes['short_name'] || raise(ArgumentError, 'short_name is required')
-    @full_name = attributes['full_name']
-    @url = attributes['url']
+    @name = attributes['name'] || raise(ArgumentError, 'name is required')
+    @url = attributes['url'] || raise(ArgumentError, 'url is required')
+    @possibly_broken = attributes['possibly_broken'] || false
+    @population = attributes['population']
     @attributes = attributes
   end
 
+  # Details hash if available
   def details
-    @details ||= AuthorityDetailsFetcher.fetch(short_name)
+    @details ||= AuthorityDetailsFetcher.find(short_name) || {}
   end
 
+  # Stats hash if available
   def stats
-    @stats ||= AuthorityStatsFetcher.fetch(short_name)
+    @stats ||= AuthorityStatsFetcher.find(short_name) || {}
   end
 
   # Add explicit methods for commonly accessed attributes

@@ -64,11 +64,10 @@
   copy:
     content: |
       {
-        "last_check": null,
+        "last_roundup": null,
         "github_check": null,
         "morph_check": null,
-        "status": "initialized",
-        "job_pending": false
+        "roundup_requested": false
       }
     dest: "/var/www/api/data/scrape_status.json"
     owner: caddy
