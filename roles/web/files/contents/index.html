@@ -25,14 +25,86 @@
                     <i class="fas fa-arrow-right"></i> Check it out
                 </a>
             </div>
-            <!-- Add more project cards as needed -->
+            <h3>Issues</h3>
+            <p>Track ongoing development work and help fix broken scrapers.</p>
+            <a href="issues" class="button">
+                <i class="fas fa-arrow-right"></i> View Issues
+            </a>
         </div>
-    </section>
+    </div>
+</section>
 
-    <section class="about">
-        <h2><i class="fas fa-user"></i> About Me</h2>
-        <p>I'm a developer working on PlanningAlerts, helping make planning data more accessible
-            to everyone in Australia. When I'm not coding, you might find me...</p>
-    </section>
+<section class="about">
+    <h2><i class="fas fa-info-circle"></i> About This Project</h2>
+    <p>Plannies Mate helps make planning data more accessible to everyone in Australia. We maintain scrapers for council websites to collect and standardize planning application data for public use.</p>
+    <p>This suite of tools helps developers quickly find which scrapers need attention, diagnose issues with existing scrapers, and develop new ones when council websites change.</p>
+    <p class="note"><i class="fas fa-lock"></i> Note: Most tools require login access. Contact the administrator if you need access.</p>
+</section>
 </main>
-
+<style>
+    /* Additional styling just for the landing page */
+    .intro-text {
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+        color: #555;
+    }
+    
+    .project-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin: 1rem 0;
+    }
+    
+    .project-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: var(--card-background);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        padding: 1.5rem;
+    }
+    
+    .project-card p {
+        margin-bottom: 1.5rem;
+    }
+    
+    .project-icon {
+        font-size: 2.8rem;
+        color: #00843D;
+        margin-bottom: 1.2rem;
+    }
+    
+    .about {
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 3rem;
+    }
+    
+    .note {
+        font-style: italic;
+        margin-top: 1.5rem;
+        color: #666;
+    }
+    
+    .project-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .button {
+        margin-top: auto;
+        align-self: flex-start;
+    }
+    
+    @media (max-width: 768px) {
+        .project-grid {
+            grid-gap: 2rem;
+        }
+    }
+</style>

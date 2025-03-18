@@ -80,7 +80,7 @@ def main():
     # Extract title from h1
     title = extract_title(content)
     if not title:
-        print("Warning: No h1 title found in input file")
+        print(f"Warning: No h1 title found in input file {input_path}")
         title = ""
 
     # Load appropriate favicon snippet

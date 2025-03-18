@@ -9,11 +9,11 @@ prepare_server()
   (
     cd ../../..
     bin/build_theme
-  )
-  (
-    cd ../..
-    ln -nfs $PWD/web/files/{robots.txt,assets,favicon.ico}  ../tmp/html
-    ln -nfs $PWD/web/files/contents/{errors,crikey-whats-that}  ../tmp/html
+    (
+    cd tmp/build
+    find . -type f | cpio -pdvl ../html
+    )
+    ln -nfs $PWD/roles/web/files/{robots.txt,assets,favicon.ico}  tmp/html
   )      
 }
 
@@ -33,6 +33,10 @@ rake)
   ;;
 rspec)
   bundle exec rspec "$@"
+  ;;
+generate)
+  prepare_server
+  bundle exec rake generate:all
   ;;
 roundup)
   prepare_server
