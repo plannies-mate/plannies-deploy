@@ -63,9 +63,12 @@ class DevelopController < ApplicationController
       end
       method_routes[http_method] = routes.flatten.compact.sort
     end
+    method_routes['GET'] << '/index.html'
+    method_routes['GET'] << '/authorities'
+    method_routes['GET'] << '/crikey-whats-that'
+    method_routes['GET'] << '/scrapers'
+    method_routes['GET'] << '/repos'
     method_routes['GET'] << '/robots.txt'
-    method_routes['GET'] << '/crikey-whats-that/'
-    method_routes['GET'] << '/crikey-whats-that/index.html'
     layout('API Endpoints') do
       get_list_entry(method_routes['GET']) +
         post_list_entry(method_routes['POST'])
