@@ -94,7 +94,7 @@ def test_web():
     protected_paths = [
         '/authorities/',
         '/repos/',
-        '/whats_that/'
+        '/crikey-whats-that/'
     ]
 
     for path in protected_paths:

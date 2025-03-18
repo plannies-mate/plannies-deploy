@@ -31,7 +31,7 @@ def extract_title(content):
 def determine_section(input_path):
     """Determine the section name based on the input file path"""
     path_str = str(input_path).lower()
-    if 'whats_that' in path_str or 'crikey' in path_str:
+    if 'crikey-whats-that' in path_str or 'crikey' in path_str:
         return "Crikey! What's That?"
     return "Plannies Mate"
 
@@ -84,7 +84,7 @@ def main():
         title = ""
 
     # Load appropriate favicon snippet
-    is_crikey = 'whats_that' in str(input_path).lower() or 'crikey' in str(input_path).lower()
+    is_crikey = 'crikey-whats-that' in str(input_path).lower() or 'crikey' in str(input_path).lower()
     favicon_name = 'favicon-crikey.html' if is_crikey else 'favicon-default.html'
     favicon_path = project_root / 'roles' / 'web' / 'files' / 'layouts' / favicon_name
     try:

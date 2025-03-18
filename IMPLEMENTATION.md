@@ -24,7 +24,7 @@ roles/web/files/
 ├── contents/       # Raw content to be themed
 │   ├── authorities/
 │   ├── repos/
-│   └── whats_that/
+│   └── crikey-whats-that/
 ├── layouts/      # Theme layouts
 │   └── default.html
 ├── favicon.ico     # Direct copy files
@@ -46,7 +46,7 @@ roles/web/files/
 ├── assets/          # Copied directly from roles/web/files/assets
 ├── authorities/     # Themed content from tmp/build/authorities
 ├── repos/          # Themed content from tmp/build/repos
-└── whats_that/     # Themed content from tmp/build/whats_that
+└── crikey-whats-that/     # Themed content from tmp/build/crikey-whats-that
 ```
 
 ### Content Management
@@ -54,7 +54,7 @@ roles/web/files/
 1. Theme System
     - layouts support substitution of:
         - {{TITLE}} and {{CONTENT}} from contents file
-        - {{FAVICON}} and {{SECTION}} for whats_that or default
+        - {{FAVICON}} and {{SECTION}} for crikey-whats-that or default
         - {{LAST_CHECKED}} which indicates the freshness of the plannies-mate contents file
           or time deployed for the other contents
     - Theme applied during build, not runtime
