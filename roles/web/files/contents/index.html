@@ -1,11 +1,10 @@
-
 <div class="hero">
     <div class="container">
         <header>
             <div class="profile-image">
                 <img src="https://avatars.githubusercontent.com/u/199023834?s=200&v=4" alt="Plannies Mate: Dev My Scraper" />
             </div>
-            <h1><i class="fas fa-code"></i>Plannies Mate</h1>
+            <h1><i class="fas fa-code"></i> Plannies Mate</h1>
             <p class="subtitle">Dev My Scraper</p>
         </header>
     </div>
@@ -13,34 +12,64 @@
 
 <main class="container">
     <section class="projects">
-        <h2><i class="fas fa-rocket"></i> Projects</h2>
+        <h2><i class="fas fa-compass"></i> Explore Planning Alerts</h2>
+        <p class="intro-text">Access Australian planning data through these tools designed to make your scraper development easier.</p>
+        
         <div class="project-grid">
             <div class="project-card">
                 <div class="project-icon">
                     <i class="fas fa-magnifying-glass-chart"></i>
                 </div>
                 <h3>Crikey, What's That?</h3>
-                <p>A tool to analyze planning systems and find the right scraper.</p>
+                <p>Analyze planning systems and find the right scraper for any council website.</p>
                 <a href="crikey-whats-that" class="button">
-                    <i class="fas fa-arrow-right"></i> Check it out
+                    <i class="fas fa-arrow-right"></i> Explore Tool
                 </a>
             </div>
-            <h3>Issues</h3>
-            <p>Track ongoing development work and help fix broken scrapers.</p>
-            <a href="issues" class="button">
-                <i class="fas fa-arrow-right"></i> View Issues
-            </a>
+            
+            <div class="project-card">
+                <div class="project-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <h3>Authorities</h3>
+                <p>Browse all Australian planning authorities and their data collection status.</p>
+                <a href="authorities" class="button">
+                    <i class="fas fa-arrow-right"></i> View Authorities
+                </a>
+            </div>
+            
+            <div class="project-card">
+                <div class="project-icon">
+                    <i class="fas fa-code-branch"></i>
+                </div>
+                <h3>Scrapers</h3>
+                <p>Explore all planning data scrapers organized by authority coverage.</p>
+                <a href="scrapers" class="button">
+                    <i class="fas fa-arrow-right"></i> View Scrapers
+                </a>
+            </div>
+            
+            <div class="project-card">
+                <div class="project-icon">
+                    <i class="fas fa-bug"></i>
+                </div>
+                <h3>Issues</h3>
+                <p>Track ongoing development work and help fix broken scrapers.</p>
+                <a href="issues" class="button">
+                    <i class="fas fa-arrow-right"></i> View Issues
+                </a>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<section class="about">
-    <h2><i class="fas fa-info-circle"></i> About This Project</h2>
-    <p>Plannies Mate helps make planning data more accessible to everyone in Australia. We maintain scrapers for council websites to collect and standardize planning application data for public use.</p>
-    <p>This suite of tools helps developers quickly find which scrapers need attention, diagnose issues with existing scrapers, and develop new ones when council websites change.</p>
-    <p class="note"><i class="fas fa-lock"></i> Note: Most tools require login access. Contact the administrator if you need access.</p>
-</section>
+    <section class="about">
+        <h2><i class="fas fa-info-circle"></i> About This Project</h2>
+        <p>Plannies Mate helps make planning data more accessible to everyone in Australia. We maintain scrapers for council websites to collect and standardize planning application data for public use.</p>
+        <p>This suite of tools helps developers quickly find which scrapers need attention, diagnose issues with existing scrapers, and develop new ones when council websites change.</p>
+        <p class="note"><i class="fas fa-lock"></i> Note: Most tools require login access. Contact the administrator if you need access.</p>
+    </section>
 </main>
+
 <style>
     /* Additional styling just for the landing page */
     .intro-text {
@@ -53,20 +82,22 @@
     .project-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
-        margin: 1rem 0;
+        grid-gap: 2rem;
+        margin: 1rem 0 3rem;
+        grid-auto-rows: minmax(min-content, max-content);
     }
     
     .project-card {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
-        height: 100%;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        background: var(--card-background);
+        background: var(--card-background, #ffffff);
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         border-radius: 8px;
         padding: 1.5rem;
+        margin-bottom: 1rem;
+        min-height: 290px;
     }
     
     .project-card p {
@@ -83,7 +114,7 @@
         background-color: #f9f9f9;
         border-radius: 8px;
         padding: 2rem;
-        margin-top: 3rem;
+        margin-top: 1rem;
     }
     
     .note {
@@ -104,7 +135,11 @@
     
     @media (max-width: 768px) {
         .project-grid {
-            grid-gap: 2rem;
+            grid-template-columns: 1fr;
+        }
+        
+        .project-card {
+            margin-bottom: 2rem;
         }
     }
 </style>
