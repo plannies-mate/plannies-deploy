@@ -2,7 +2,9 @@
 /.ports
 
 # Generated data
-/roles/api/files/data/
+/roles/api/files/tmp
+/roles/api/files/log
+/roles/api/files/coverage
 
 # passwords for web site
 /files/users.passwd

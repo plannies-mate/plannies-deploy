@@ -8,16 +8,21 @@ if ENV['RACK_ENV'] != 'production'
   task default: :spec
 
   namespace :spec do
-    desc 'Run analyzer specs'
-    RSpec::Core::RakeTask.new(:analyzer) do |t|
-      t.pattern = 'spec/analyzer/**/*_spec.rb'
+    desc 'Run App specs'
+    RSpec::Core::RakeTask.new(:app) do |t|
+      t.pattern = 'spec/app/**/*_spec.rb'
     end
 
-    desc 'Run API specs'
-    RSpec::Core::RakeTask.new(:api) do |t|
-      t.pattern = 'spec/api/**/*_spec.rb'
+    desc 'Run Library specs'
+    RSpec::Core::RakeTask.new(:lib) do |t|
+      t.pattern = 'spec/lib/**/*_spec.rb'
+    end
+
+    desc 'Run Rake Task specs'
+    RSpec::Core::RakeTask.new(:tasks) do |t|
+      t.pattern = 'spec/tasks/**/*_spec.rb'
     end
   end
 else
-  # FIXME: default route
+  puts "Run 'rake -T' for list of rake tasks (no default task in production)"
 end

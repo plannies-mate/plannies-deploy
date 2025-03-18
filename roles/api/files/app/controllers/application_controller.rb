@@ -4,6 +4,9 @@ require 'sinatra/base'
 require 'sinatra/json'
 require 'json'
 
+require_relative '../helpers/application_helper'
+
+# Base Controller for Sinatra API Application
 class ApplicationController < Sinatra::Base
   include ApplicationHelper
 

@@ -9,7 +9,7 @@ require_relative 'authorities_fetcher'
 # Analyse Scraper Details from various sites
 class Analyzer
   include StatusHelper
-  
+
   data_dir = File.join(File.dirname(__FILE__), '../data')
   STATUS_FILE = File.join(data_dir, 'scrape_status.json')
   TRIGGER_FILE = File.join(data_dir, 'trigger_scrape')
@@ -20,7 +20,7 @@ class Analyzer
 
   def run(options = {})
     force = options[:force] || false
-    
+
     if force || should_run?
       perform_analysis
     else
@@ -74,28 +74,28 @@ class Analyzer
 
     false
   end
-  
+
   def perform_analysis
     log 'Starting scraper analysis'
 
     # Update status to running
     update_status({
-      'status' => 'running',
-      'job_pending' => false
-    })
+                    'status' => 'running',
+                    'job_pending' => false
+                  })
 
     begin
       # Check PlanningAlerts all
       log 'Checking PlanningAlerts all...'
       planning_alerts_status = AuthoritiesFetcher.new.fetch
-      
+
       # Check GitHub repositories
       log 'Checking GitHub repositories...'
-      github_data = check_github_repos
+      # github_data = check_github_repos
 
       # Check Morph.io scrapers
       log 'Checking Morph.io scrapers...'
-      morph_data = check_morph_scrapers
+      # morph_data = check_morph_scrapers
 
       # Process and combine data
       log 'Processing collected data...'
@@ -104,12 +104,12 @@ class Analyzer
       # Update status to completed with timestamps
       now = Time.now.utc.iso8601
       update_status({
-        'last_check' => now,
-        'github_check' => now,
-        'morph_check' => now,
-        'planning_alerts_check' => planning_alerts_status ? now : nil,
-        'status' => 'completed'
-      })
+                      'last_check' => now,
+                      'github_check' => now,
+                      'morph_check' => now,
+                      'planning_alerts_check' => planning_alerts_status ? now : nil,
+                      'status' => 'completed'
+                    })
 
       log 'Analysis completed successfully'
     rescue => e
@@ -117,9 +117,9 @@ class Analyzer
       log e.backtrace.join("\n")
 
       update_status({
-        'status' => 'error',
-        'error' => e.message
-      })
+                      'status' => 'error',
+                      'error' => e.message
+                    })
     end
   end
 

@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-# develop_controller.rb
+require 'sinatra/contrib'
 
 require_relative 'application_controller'
+require_relative '../helpers/status_helper'
 
 # Development / debug endpoints not visible from outside
 class DevelopController < ApplicationController
