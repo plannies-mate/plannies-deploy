@@ -53,7 +53,7 @@ class AuthorityStatsFetcher
     page = self.class.fetch_page_with_etag(url, etag_file)
 
     if page.nil?
-      unless recent_file?(output_file)
+      unless self.class.recent_file?(output_file)
         raise "No recent cached data available and no new content received for #{short_name}"
       end
     else

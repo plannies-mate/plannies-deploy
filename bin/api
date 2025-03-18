@@ -3,6 +3,20 @@
 dir=roles/api/files 
 cd $dir || exec echo "ERROR: $dir/app.rb does not exist!"
 
+prepare_server()
+{
+  mkdir -p ../../../tmp/html
+  (
+    cd ../../..
+    bin/build_theme
+  )
+  (
+    cd ../..
+    ln -nfs $PWD/web/files/{robots.txt,assets,favicon.ico}  ../tmp/html
+    ln -nfs $PWD/web/files/contents/{errors,whats_that}  ../tmp/html
+  )      
+}
+
 cmd="$1"
 shift
 case "$cmd" in
@@ -20,13 +34,12 @@ rake)
 rspec)
   bundle exec rspec "$@"
   ;;
+roundup)
+  prepare_server
+  bundle exec rake roundup:all
+  ;;
 server)
-  mkdir -p ../../../tmp/html
-  (
-  cd ../..
-  ln -nfs $PWD/web/files/{robots.txt,assets,favicon.ico}  ../tmp/html
-  ln -nfs $PWD/web/files/contents/{errors,whats_that}  ../tmp/html
-  )      
+  prepare_server
   bundle exec rackup "$@"
   ;;
 shell)
